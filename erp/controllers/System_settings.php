@@ -5131,8 +5131,7 @@ class system_settings extends MY_Controller
             echo lang("price_group_deleted");
         }
     }
-	
-	
+
     function product_group_price_actions($group_id)
     {
         if (!$group_id) {
@@ -5146,9 +5145,15 @@ class system_settings extends MY_Controller
 
             if (!empty($_POST['val'])) {
                 if ($this->input->post('form_action') == 'update_price') {
-
-                    foreach ($_POST['val'] as $id) {
-                        $this->settings_model->setProductPriceForPriceGroup($id, $group_id, $this->input->post('price'.$id), $this->input->post('currency'.$id));
+                    $i = 0;
+                    //$this->erp->print_arrays($_POST['val']);
+                    foreach ($_POST['val'] as $row) {
+                        $rw = explode('_', $row);
+                        $id = $rw[0];
+                        $unit_id = $rw[1];
+                        $unit_type = $rw[2];
+                        $this->settings_model->setProductPriceForPriceGroup($id, $group_id, $this->input->post('price'.$id.'_'.$unit_id.'_'.$unit_type), $this->input->post('currency'.$id.'_'.$unit_id.'_'.$unit_type), $this->input->post('unit_id'.$id.'_'.$unit_id.'_'.$unit_type), $this->input->post('unit_type'.$id.'_'.$unit_id.'_'.$unit_type));
+                        $i++;
                     }
                     $this->session->set_flashdata('message', lang("products_group_price_updated"));
                     redirect($_SERVER["HTTP_REFERER"]);
@@ -5226,6 +5231,8 @@ class system_settings extends MY_Controller
             redirect($_SERVER["HTTP_REFERER"]);
         }
     }
+
+
 	
     function group_product_prices($group_id = NULL)
     {
@@ -5242,7 +5249,41 @@ class system_settings extends MY_Controller
         $this->page_construct('settings/group_product_prices', $meta, $this->data);
     }
 
-	function getProductPrices($group_id = NULL)
+
+    function getProductPrices($group_id = NULL)
+    {
+        if (!$group_id) {
+            $this->session->set_flashdata('error', lang('no_price_group_selected'));
+            redirect('system_settings/price_groups');
+        }
+
+        $pp = "( SELECT {$this->db->dbprefix('product_prices')}.product_id as product_id,{$this->db->dbprefix('product_prices')}.currency_code , {$this->db->dbprefix('product_prices')}.price as price FROM {$this->db->dbprefix('product_prices')} WHERE price_group_id = {$group_id} ) PP";
+        $curr_code = "( SELECT {$this->db->dbprefix('product_prices')}.currency_code FROM {$this->db->dbprefix('product_prices')} WHERE {$this->db->dbprefix('product_prices')}.product_id = {$this->db->dbprefix('products')}.id AND {$this->db->dbprefix('product_prices')}.price_group_id = '".$group_id."' AND (({$this->db->dbprefix('product_prices')}.unit_id = {$this->db->dbprefix('product_variants')}.id AND {$this->db->dbprefix('product_prices')}.unit_type = 'variant') OR ({$this->db->dbprefix('product_prices')}.unit_id = {$this->db->dbprefix('units')}.id AND {$this->db->dbprefix('product_prices')}.unit_type = 'unit'))) as currency";
+        $price = "( SELECT {$this->db->dbprefix('product_prices')}.price FROM {$this->db->dbprefix('product_prices')} WHERE {$this->db->dbprefix('product_prices')}.product_id = {$this->db->dbprefix('products')}.id AND {$this->db->dbprefix('product_prices')}.price_group_id = '".$group_id."' AND (({$this->db->dbprefix('product_prices')}.unit_id = {$this->db->dbprefix('product_variants')}.id AND {$this->db->dbprefix('product_prices')}.unit_type = 'variant') OR ({$this->db->dbprefix('product_prices')}.unit_id = {$this->db->dbprefix('units')}.id AND {$this->db->dbprefix('product_prices')}.unit_type = 'unit'))) as price";
+
+        $this->load->library('datatables');
+        $this->datatables
+            ->select("{$this->db->dbprefix('products')}.id as id, {$this->db->dbprefix('products')}.code as product_code, 
+						{$this->db->dbprefix('products')}.name as product_name, 
+						IF({$this->db->dbprefix('product_variants')}.id, CONCAT({$this->db->dbprefix('product_variants')}.id, '___', {$this->db->dbprefix('product_variants')}.name, '___', 'variant'), CONCAT({$this->db->dbprefix('units')}.id, '___', {$this->db->dbprefix('units')}.name, '___', 'unit')) as unit,
+						".$curr_code.",
+						".$price.",
+						IF({$this->db->dbprefix('product_variants')}.id, CONCAT({$this->db->dbprefix('product_variants')}.id, '_', 'variant'), CONCAT({$this->db->dbprefix('units')}.id, '_', 'unit')) AS h_unit")
+            ->from("products")
+            ->join('units', 'products.unit = units.id', 'left')
+            ->join('product_variants', 'products.id = product_variants.product_id', 'left')
+            ->join('currencies', 'currencies.code = products.currentcy_code', 'left')
+            ->edit_column("unit", "$1_$2___$3", "id, h_unit, unit")
+            ->edit_column("currency", "$1_$2__$3", 'id, h_unit, currency')
+            ->edit_column("price", "$1_$2__$3", 'id, h_unit, price')
+            ->edit_column("id", "$1_$2", "id, h_unit")
+            ->unset_column("h_unit")
+            ->add_column("Actions", "<div class=\"text-center\"><button class=\"btn btn-primary btn-xs form-submit\" type=\"button\"><i class=\"fa fa-check\"></i></button></div>", "id");
+
+        echo $this->datatables->generate();
+    }
+
+	function getProductPrices_old($group_id = NULL)
 	{
         if (!$group_id) {
             $this->session->set_flashdata('error', lang('no_price_group_selected'));
@@ -5263,8 +5304,24 @@ class system_settings extends MY_Controller
 
         echo $this->datatables->generate();
     }
-	
+
     function update_product_group_price($group_id = NULL)
+    {
+        if (!$group_id) {
+            $this->erp->send_json(array('status' => 0));
+        }
+        $product_id = $this->input->post('product_id', TRUE);
+        $price = $this->input->post('price', TRUE);
+        if (!empty($product_id) && !empty($price)) {
+            if ($this->settings_model->setProductPriceForPriceGroup($product_id, $group_id, $price)) {
+                $this->erp->send_json(array('status' => 1));
+            }
+        }
+
+        $this->erp->send_json(array('status' => 0));
+    }
+
+    function update_product_group_price_old($group_id = NULL)
     {
         if (!$group_id) {
             $this->erp->send_json(array('status' => 0));

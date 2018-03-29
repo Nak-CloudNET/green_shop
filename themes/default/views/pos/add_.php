@@ -16,39 +16,6 @@
     <link rel="stylesheet" href="<?= $assets ?>pos/css/print.css" type="text/css" media="print"/>
     <script type="text/javascript" src="<?= $assets ?>js/jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="<?= $assets ?>js/jquery-migrate-1.2.1.min.js"></script>
-	<script>
-	var __c = '<?= $this->router->fetch_class() ?>';
-	var __f = '<?= $this->router->fetch_method() ?>';
-
-    function isString(val) {
-        return typeof val === 'string' || ((!!val && typeof val === 'object') && Object.prototype.toString.call(val) === '[object String]');
-    }
-
-    function _escapQuote(str) {
-        return str.replace(/(['"])/g, "\\$1");
-    }
-
-    function __getRandomUnique() {
-		return Math.floor(new Date().valueOf() * Math.random());
-	}
-	function __getItem(key) {
-		return localStorage.getItem(__c + __f + key);
-	}
-	function __setItem(key, vl) {
-		localStorage.setItem(__c + __f + key, vl);
-	}
-	function __removeItem(arr_key) {
-        if(isString(arr_key)) {
-            localStorage.removeItem(__c + __f + arr_key);
-        } else {
-            for (var i = 0; i < arr_key.length; i++) {
-                if (__getItem(arr_key[i])) {
-                    localStorage.removeItem(arr_key[i]);
-                }
-            }
-        }
-	}
-	</script>
     <!--[if lt IE 9]>
     <script src="<?= $assets ?>js/jquery.js"></script>
     <![endif]-->
@@ -62,53 +29,41 @@
         </script>
     <?php } ?>
 	<script>
-		__setItem('exchange_kh', '<?php echo $exchange_rate->rate ? $exchange_rate->rate : 0; ?>');
-		__setItem('u_username', '<?php echo $this->session->userdata('username') ?>');
-		__setItem('queue', '<?php echo isset($queue->queue) ?>');
-		__setItem('gp', '<?= json_encode($GP) ?>');
-        __setItem('owner', '<?= json_encode($Owner) ?>');
-        __setItem('admin', '<?= json_encode($Admin) ?>');
+		localStorage.setItem('exchange_kh', '<?php echo isset($exchange_rate->rate)?$exchange_rate->rate:0 ?>');
+		localStorage.setItem('u_username', '<?php echo $this->session->userdata('username') ?>');
+		localStorage.setItem('queue', '<?php echo $queue->queue ?>');
 	</script>
-
+	
 	<script>
-
+	
 		<?php if($sale_order_id){ ?>
-			__setItem('positems', JSON.stringify(<?= $sale_order_items; ?>));
-			__setItem('poscustomer', '<?= $sale_order->customer_id ?>');
-			__setItem('poswarehouse', '<?= $sale_order->warehouse_id ?>');
-			__setItem('posdiscount', '<?= $sale_order->order_discount_id ?>');
-			__setItem('postax2', '<?= $sale_order->order_tax_id ?>');
-			__setItem('posbiller', '<?= $sale_order->biller_id ?>');
-			__setItem('saleman', '<?= $sale_order->saleman_by ?>');
-			__setItem('delivery_by', '<?= $sale_order->delivery_by ?>');
-
+			localStorage.setItem('positems', JSON.stringify(<?= $sale_order_items; ?>));
+			localStorage.setItem('poscustomer', '<?= $sale_order->customer_id ?>');
+			localStorage.setItem('poswarehouse', '<?= $sale_order->warehouse_id ?>');
+			localStorage.setItem('posdiscount', '<?= $sale_order->order_discount_id ?>');
+			localStorage.setItem('postax2', '<?= $sale_order->order_tax_id ?>');
+			localStorage.setItem('posbiller', '<?= $sale_order->biller_id ?>');
+			localStorage.setItem('saleman', '<?= $sale_order->saleman_by ?>');
+			localStorage.setItem('delivery_by', '<?= $sale_order->delivery_by ?>');
+			
 		<?php } ?>
-
+		
 		<?php if($combine_table){ ?>
-			__setItem('positems', JSON.stringify(<?= $combine_items; ?>));
+			localStorage.setItem('positems', JSON.stringify(<?= $combine_items; ?>));
 		<?php } ?>
-
-
+	
+		
 	</script>
-	<style>
-
+	<style>		
+		
 		.modal-body-scroll{
 			height: 650px;
 			overflow-y: auto;
 		}
-
-		.select2-result.select2-result-unselectable.select2-disabled {
-			display: none;
-		}
-
-		.btn-group .btn + .btn, .btn-group .btn + .btn-group, .btn-group .btn-group + .btn, .btn-group .btn-group + .btn-group {
-			margin-left: 0 !important;
-		}
-
+		
 	</style>
 </head>
 <body>
-
 <noscript>
     <div class="global-site-notice noscript">
         <div class="notice-inner">
@@ -133,31 +88,31 @@ if ($q->num_rows() > 0) {
     foreach ($q->result() as $row) {
         $arrSuspend[$row->suspend_id]['suspend'] = "suspend";
 		if(strlen($row->customer)>10){
-			$cust = substr($row->customer,0,10);
+			$cust = substr($row->customer,0,10); 
 		}else{
 			$cust = $row->customer;
 		}
         $arrSuspend[$row->suspend_id]['cust']   = $cust;
         $arrSuspend[$row->suspend_id]['date']   = $row->date;
         $arrSuspend[$row->suspend_id]['count']  = $row->count;
-        //$arrSuspend[$row->suspend_id]['total']  = $row->total;
+        $arrSuspend[$row->suspend_id]['total']  = $row->total;
         $arrSuspend[$row->suspend_id]['id']     = $row->id;
         $arrSuspend[$row->id]['suspend_not']    = $row->suspend_id;
 		$arrSuspend[$row->id]['suspend_name']   = $row->suspend_name;
 		//echo $row->total;exit;
     }
-}
+} 
 ?>
 <div id="wrapper">
     <header id="header" class="navbar">
         <div class="container bblack" id="container">
             <a class="navbar-brand" href="<?= site_url() ?>"><span class="logo"><span class="pos-logo-lg"><?= $Settings->site_name ?></span><span class="pos-logo-sm"><?= lang('pos') ?></span></span><br><span class "btn bblack" id="display_time"></span></a>
-
+			    
             <div class="header-nav">
                 <ul class="nav navbar-nav pull-right">
                     <li class="dropdown">
                         <a class="btn account dropdown-toggle" data-toggle="dropdown" href="#">
-								<img alt="" src="<?= $this->session->userdata('avatar') ? site_url() . 'assets/uploads/avatars/thumbs/' . $this->session->userdata('avatar') : $assets . 'images/' . $this->session->userdata('gender') . '.png'; ?>" class="mini_avatar img-rounded">
+								<img alt="" src="<?= $this->session->userdata('avatar') ? site_url() . 'assets/uploads/avatars/thumbs/' . $this->session->userdata('avatar') : $assets . 'images/' . $this->session->userdata('gender') . '.png'; ?>" class="mini_avatar img-rounded">                        
 								<br>
 								<div class="user">
 									<p><?= $this->session->userdata('username'); ?></p>
@@ -185,13 +140,13 @@ if ($q->num_rows() > 0) {
                 </ul>
 
                 <ul class="nav navbar-nav pull-right">
-					<li class="dropdown">
+					<li class="dropdown hidden-sm">
 						<a class="btn pos-tip" title="<?= lang('dashboard') ?>" data-placement="left" href="<?= site_url('welcome') ?>">
 							<i class="fa fa-dashboard"></i><p><?= lang('dashboard'); ?></p>
 						</a>
-					</li>
+					</li>				
                     <?php if ($Owner) { ?>
-                        <li class="dropdown">
+                        <li class="dropdown hidden-sm">
                             <a class="btn pos-tip" title="<?= lang('settings') ?>" data-placement="left" href="<?= site_url('pos/settings') ?>">
                                 <i class="fa fa-cogs"></i><p><?= lang('settings'); ?></p>
                             </a>
@@ -209,82 +164,73 @@ if ($q->num_rows() > 0) {
                     </li>
                     <li class="dropdown hidden-sm">
                         <a class="btn pos-tip" title="<?= lang('shortcuts') ?>" data-placement="left" href="#" data-toggle="modal" data-target="#sckModal">
-                            <i class="fa fa-key"></i><p><?= lang('shortcuts'); ?></p>
+                            <i class="fa fa-key"></i><p><?= lang('shortcuts'); ?></p> 
                         </a>
                     </li>
 					<?php if ($pos_settings->show_suspend_bar == 40) { ?>
 					<li class="dropdown">
                         <a class="btn pos-tip" title="<?= lang('view_kitchen') ?>" data-placement="bottom" href="<?= site_url('pos/view_kitchen') ?>" target="_blank">
-                            <i class="fa fa-laptop"></i><p><?= lang('kitchen'); ?></p>
+                            <i class="fa fa-laptop"></i><p><?= lang('kitchen'); ?></p> 
                         </a>
-                    </li>
+                    </li>                    
 					<li class="dropdown">
                         <a class="btn pos-tip" title="<?= lang('view_complete') ?>" data-placement="bottom" href="<?= site_url('pos/view_complete') ?>" target="_blank">
-                            <i class="fa fa-laptop"></i><p><?= lang('complete'); ?></p>
+                            <i class="fa fa-laptop"></i><p><?= lang('complete'); ?></p> 
                         </a>
                     </li>
 					<?php } ?>
 					<li class="dropdown">
                         <a class="btn pos-tip" title="<?= lang('view_bill_screen') ?>" data-placement="bottom" href="<?= site_url('pos/view_bill') ?>" target="_blank">
-                            <i class="fa fa-laptop"></i><p><?= lang('screen'); ?></p>
+                            <i class="fa fa-laptop"></i><p><?= lang('screen'); ?></p> 
                         </a>
                     </li>
 					<li class="dropdown">
                         <a class="btn pos-tip" title="<?= lang('delivery') ?>" data-placement="bottom" href="<?= site_url('pos/deliveries') ?>" data-toggle="modal" data-target="#myModal">
-                            <i class="fa fa-car"></i><p><?= lang('delivery'); ?></p>
+                            <i class="fa fa-car"></i><p><?= lang('delivery'); ?></p> 
                         </a>
                     </li>
 					<!--
                     <li class="dropdown">
                         <a class="btn bdarkGreen pos-tip" id="register_details" title="<?= lang('register_details') ?>" data-placement="bottom" data-html="true" href="<?= site_url('pos/register_details') ?>" data-toggle="modal" data-target="#myModal">
-                            <i class="fa fa-check-circle"></i><p><?= lang('register'); ?></p>
+                            <i class="fa fa-check-circle"></i><p><?= lang('register'); ?></p> 
                         </a>
                     </li>-->
                     <li class="dropdown">
                         <a class="btn borange pos-tip" id="close_register" title="<?= lang('close_register') ?>" data-placement="bottom" data-html="true" href="<?= site_url('pos/close_register/' .$this->session->userdata('user_id')) ?>" data-toggle="modal" data-target="#myModal">
-                            <i class="fa fa-times-circle"></i><p><?= lang('clear'); ?></p>
+                            <i class="fa fa-times-circle"></i><p><?= lang('clear'); ?></p> 
                         </a>
                     </li>
-                    <?php if (!$Owner) { ?>
-                        <li class="dropdown hidden-xs">
-                            <a href="#" id="pos-list" title="<?= lang('list_sales') ?>"
-                               class="btn blightOrange pos-tip external" data-toggle="modal" data-target="#poslist">
-                                <i class="fa fa-print"></i>
-                                <p><?= lang('list_sales'); ?></p>
-                            </a>
-                        </li>
-                    <?php } ?>
                     <li class="dropdown">
                         <a class="btn borange pos-tip" id="add_expense" title="<span><?= lang('add_expense') ?>" data-placement="bottom" data-html="true" href="<?= site_url('purchases/add_expense') ?>" data-toggle="modal" data-target="#myModal">
-                            <i class="fa fa-dollar"></i><p><?= lang('expense'); ?></p>
+                            <i class="fa fa-dollar"></i><p><?= lang('expense'); ?></p> 
                         </a>
                     </li>
-                    <?php if ($Owner) { ?>
+					<?php if ($Owner) { ?>
                         <li class="dropdown">
                             <a class="btn bdarkGreen pos-tip" id="today_profit" title="<?= lang('today_profit') ?>" data-placement="bottom" data-html="true" href="<?= site_url('reports/profit') ?>" data-toggle="modal" data-target="#myModal">
-                                <i class="fa fa-hourglass-half"></i><p><?= lang('profit'); ?></p>
+                                <i class="fa fa-hourglass-half"></i><p><?= lang('profit'); ?></p> 
                             </a>
                         </li>
                     <?php } ?>
                     <?php if ($Owner || $Admin) { ?>
                         <li class="dropdown">
                             <a class="btn bdarkGreen pos-tip" id="today_sale" title="<?= lang('today_sale') ?>" data-placement="bottom" data-html="true" href="<?= site_url('pos/today_sale') ?>" data-toggle="modal" data-target="#myModal">
-                                <i class="fa fa-heart"></i><p><?= lang('today'); ?></p>
+                                <i class="fa fa-heart"></i><p><?= lang('today'); ?></p> 
                             </a>
                         </li>
                         <li class="dropdown hidden-xs">
                             <a class="btn bblue pos-tip" title="<?= lang('list_open_registers') ?>" data-placement="bottom" href="<?= site_url('pos/registers') ?>">
-                                <i class="fa fa-list"></i><p><?= lang('register'); ?></p>
+                                <i class="fa fa-list"></i><p><?= lang('register'); ?></p> 
                             </a>
                         </li>
 						<li class="dropdown hidden-xs">
 							<a href="#" id="pos-list" title="<?= lang('list_sales') ?>" class="btn blightOrange pos-tip external" data-toggle="modal" data-target="#poslist">
-								<i class="fa fa-print"></i><p><?= lang('list_sales'); ?></p>
+								<i class="fa fa-print"></i><p><?= lang('list_sales'); ?></p> 
 							</a>
                         </li>
                         <li class="dropdown hidden-xs">
                             <a class="btn bred pos-tip" title="<?= lang('clear_ls') ?>" data-placement="bottom" id="clearLS" href="#">
-                                <i class="fa fa-eraser"></i><p><?= lang('reset'); ?></p>
+                                <i class="fa fa-eraser"></i><p><?= lang('reset'); ?></p> 
                             </a>
                         </li>
                     <?php } ?>
@@ -297,7 +243,7 @@ if ($q->num_rows() > 0) {
 	<div id="content" style="margin-bottom: -40px !Important; ">
 		<div class="grid-view" style="width:98%; overflow: hidden;">
 			<div id="proContainer" style="height: 118px !important;">
-				<div id="product-sale-view">
+				<div id="product-sale-view">																				
 				</div>
 			</div>
 		</div>
@@ -330,8 +276,8 @@ if ($q->num_rows() > 0) {
 								  <div id="myCarousel" class="carousel slide col-xs-12 col-md-12 col-lg-12" data-ride="carousel" style="padding-left:0;padding-right:0;">
 									<!-- Indicators -->
 									<ol class="carousel-indicators">
-									<?php
-									for($x=0; $x < $totimg; $x++){
+									<?php 
+									for($x=0; $x < $totimg; $x++){ 
 										if($x == 0) {
 									?>
 											  <li data-target="#myCarousel" data-slide-to="<?= $x; ?>" class="active"></li>
@@ -341,7 +287,7 @@ if ($q->num_rows() > 0) {
 											  <li data-target="#myCarousel" data-slide-to="<?= $x; ?>"></li>
 									<?php
 										}
-									}
+									} 
 									?>
 									</ol>
 
@@ -360,7 +306,7 @@ if ($q->num_rows() > 0) {
 									  <div class="row item">
 										<img src="<?= base_url(). $dir . $a_img[$x]; ?>" class="img-responsive" style="height:265px; width:100%;"/>
 									  </div>
-									<?php
+									<?php 
 											}
 										}
 									?>
@@ -403,13 +349,13 @@ if ($q->num_rows() > 0) {
 				</div>
 			</div>
 		</div>
-
+		
 		<div style="clear:both;"></div>
 	</div>
 	<div style="clear:both;"></div>
 <?php } ?>
-    <div id="content">
-
+    <div id="content">   
+		
 		<div class="c1">
             <div class="pos">
                 <?php
@@ -432,7 +378,7 @@ if ($q->num_rows() > 0) {
 					<?php } elseif($layout == 5) { ?>
 					<div id="leftdiv115">
 					<?php } else { ?>
-                    <div id="leftdiv">
+                    <div id="leftdiv">	
                     <?php } ?>
                         <div id="printhead">
                             <h4 style="text-transform:uppercase;"><?php echo $Settings->site_name; ?></h4>
@@ -450,7 +396,7 @@ if ($q->num_rows() > 0) {
 										<?php
 										echo form_input('customer', (isset($_POST['customer']) ? $_POST['customer'] : ""), 'id="poscustomer" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("customer") . '" required="required" class="form-control pos-input-tip" style="width:100%;"');
 										?>
-
+										
 										<div class="input-group-addon no-print" style="padding: 2px 5px; border-left: 0;">
 											<a href="#" id="view-customer" class="external" data-toggle="modal" data-target="#myModal">
 												<i class="fa fa-2x fa-user" id="addIcon"></i>
@@ -476,7 +422,7 @@ if ($q->num_rows() > 0) {
 											}
 											echo form_dropdown('warehouse', $wh, (isset($_POST['warehouse']) ? $_POST['warehouse'] : $Settings->default_warehouse), 'id="poswarehouse" class="form-control pos-input-tip" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("warehouse") . '" required="required" style="width:100%;" ');
 											?>
-
+											
 										</div>
 									<?php } else { ?>
 
@@ -488,9 +434,9 @@ if ($q->num_rows() > 0) {
 											}
 											echo form_dropdown('warehouse', $wh, (isset($_POST['warehouse']) ? $_POST['warehouse'] : $Settings->default_warehouse), 'id="poswarehouse" class="form-control pos-input-tip" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("warehouse") . '" required="required" style="width:100%;" ');
 											?>
-
+											
 										</div>
-
+									
 									<?php } ?>
 								</div>
 							</div>
@@ -526,9 +472,10 @@ if ($q->num_rows() > 0) {
 						<div id="left-top">
                             <div style="position: absolute; <?= $Settings->rtl ? 'right:-9999px;' : 'left:-9999px;'; ?>"><?php echo form_input('test', '', 'id="test" class="kb-pad"'); ?></div>
 							<div class="col-md-6" style="padding-left:0; margin-bottom: 5px">
-                                <div class="form-group">
-                                   	<div class="input-group">
-                                    <?php
+								<?php if ($Owner || $Admin) { ?>
+                                    <div class="form-group">
+                                    <?php if ($Owner || $Admin || $GP['customers-add']) { ?><div class="input-group"><?php } ?>
+                                        <?php
                                         echo form_input('customer', (isset($_POST['customer']) ? $_POST['customer'] : ""), 'id="poscustomer" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("customer") . '" required="required" class="form-control pos-input-tip" style="width:100%;"');
                                         ?>
                                         <div class="input-group-addon no-print" style="padding: 2px 5px; border-left: 0;">
@@ -542,10 +489,38 @@ if ($q->num_rows() > 0) {
                                                 <i class="fa fa-2x fa-plus-circle" id="addIcon"></i>
                                             </a>
                                         </div>
-                                    	<?php } ?>
                                     </div>
+                                    <?php } ?>
                                     <div style="clear:both;"></div>
                                 </div>
+                                <?php } else { ?>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <div class="col-sm-11" style="padding-right: 0">
+                                                <?php if ($Owner || $Admin || $GP['customers-add']) { ?><div class="input-group"><?php } ?>
+                                                    <?php
+                                                    echo form_input('customer', (isset($_POST['customer']) ? $_POST['customer'] : ""), 'id="poscustomer" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("customer") . '" required="required" class="form-control pos-input-tip" style="width:100%;"');
+                                                    ?>
+                                            </div>
+                                            <div class="col-sm-1" style="padding-left: 0">
+                                                <div class="input-group-addon no-print" style="padding: 2px 5px; border-left: 0; border-right: 1px solid #CCC">
+                                                    <a href="#" id="view-customer" class="external" data-toggle="modal" data-target="#myModal">
+                                                        <i class="fa fa-2x fa-user" id="addIcon"></i>
+                                                    </a>
+                                                </div>
+                                                <?php if ($Owner || $Admin || $GP['customers-add']) { ?>
+                                                <div class="input-group-addon no-print" style="padding: 2px 5px;">
+                                                    <a href="<?= site_url('customers/add_customer_pos'); ?>" id="add-customer" class="external" data-toggle="modal" data-target="#myModal">
+                                                        <i class="fa fa-2x fa-plus-circle" id="addIcon"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
+                                        <div style="clear:both;"></div>
+                                    </div>
+                                <?php } ?>
                             </div>
 							<?php if ($Owner || $Admin) { ?>
 								<div class="col-md-6" style="padding-right:0;">
@@ -569,9 +544,9 @@ if ($q->num_rows() > 0) {
 									}
 									echo form_dropdown('warehouse', $wh, (isset($_POST['warehouse']) ? $_POST['warehouse'] : $Settings->default_warehouse), 'id="poswarehouse" class="form-control pos-input-tip" data-placeholder="' . $this->lang->line("select") . ' ' . $this->lang->line("warehouse") . '" required="required" style="width:100%;" ');
 									?>
-
+									
 								</div>
-
+										
 							<?php } ?>
 							<div class="col-md-12" style="padding:0;">
 								<div class="no-print">
@@ -616,23 +591,20 @@ if ($q->num_rows() > 0) {
 								<?php } ?>
                                         <thead>
                                         <tr>
-											<th width="5%"><?= lang("num_"); ?></th>
+											<th width="3%"><?= lang("num_"); ?></th>
 											<?php if ($layout == 3 && $pos_settings->show_item_img != 0) { ?>
-											<th width="10%"><?= lang("image"); ?></th>
+											<th width="7%"><?= lang("image"); ?></th>
 											<?php } ?>
-											<?php if($pos_settings->show_product_code == 1) { ?>
-                                            <th width="15%"><?= lang("code"); ?></th>
-                                            <?php } ?>
                                             <th width="30%"><?= lang("product"); ?></th>
 											<?php if($this->session->userdata('view_stock')){ ?>
 											<th width="10%"><?= lang("stock"); ?></th>
 											<?php } ?>
                                             <th width="10%"><?= lang("price"); ?></th>
-											<th width="10%"><?= lang("price_kh"); ?></th>
+											<th width="12%"><?= lang("price_kh"); ?></th>
                                             <th width="10%"><?= lang("qty"); ?></th>
-											<th width="10%"><?= lang("discount"); ?></th>
-                                            <th width="15%"><?= lang("subtotal"); ?></th>
-                                            <th style="text-align: center;"><i class="fa fa-trash-o"  style="opacity:0.5; filter:alpha(opacity=50);"></i>
+											<th width="5%"><?= lang("discount"); ?></th>
+                                            <th width="13%"><?= lang("subtotal"); ?></th>
+                                            <th style="width: 5%; text-align: center;"><i class="fa fa-trash-o"  style="opacity:0.5; filter:alpha(opacity=50);"></i>
                                             </th>
                                         </tr>
                                         </thead>
@@ -641,15 +613,14 @@ if ($q->num_rows() > 0) {
                                     </table>
 									<input type="hidden" name="table_no" class=" table_no" id="table_no" value="<?=(isset($arrSuspend[$sid]['suspend_not']) ? $arrSuspend[$sid]['suspend_not'] : '')?>"/>
                                     <input type="hidden" name="suspend_" id="suspend_id" value="<?=(isset($sid) ? $sid : 0)?>" />
-									<input type="hidden" name="suspend_date" id="suspend_date" value="<?=(isset($arrSuspend[$sid]['date'])?$arrSuspend[$sid]['date']:"")?>">
 									<input type="hidden" name="suspend_name" id="suspend_name" value="<?=(isset($arrSuspend[$sid]['suspend_name'])?$arrSuspend[$sid]['suspend_name']:0)?>">
-
+                                    
                                     <div style="clear:both;"></div>
                                 </div>
                             </div>
                             <div style="clear:both;"></div>
                             <div id="left-bottom">
-                                <table id="totalTable" style="width:100%; float:right; padding:5px; color:#000; background: #FFF;">
+                                <table id="totalTable" style="width:100%; float:right; padding:5px; color:#000; background: #FFF;">                                    
 									<tr>
                                         <td style="padding: 5px 10px; font-size: 16px;"><?= lang('items'); ?> <span style="padding: 5px 10px; font-size: 16px; font-weight:bold;" id="titems">0</span></td>
                                         <td colspan="1" class="text-right">
@@ -661,7 +632,7 @@ if ($q->num_rows() > 0) {
                                         <td class="text-right" style="padding: 5px 10px;font-size: 16px; font-weight:bold;">
                                             <span id="total">0.00</span>
                                         </td>
-
+										
                                     </tr>
                                     <tr>
                                         <td style="padding: 5px 10px; font-size: 16px;"><?= lang('order_tax'); ?>
@@ -672,7 +643,7 @@ if ($q->num_rows() > 0) {
                                         <td class="text-right" style="padding: 5px 10px;font-size: 16px; font-weight:bold;">
                                             <span id="ttax2">0.00</span>
                                         </td>
-
+										
 										<td style="padding: 5px 10px; font-size: 16px;"><?= lang('shipping'); ?>
                                             <a href="#" id="edit_shipping">
                                                 <i class="fa fa-edit"></i>
@@ -680,8 +651,8 @@ if ($q->num_rows() > 0) {
                                         </td>
                                         <td class="text-right" style="padding: 5px 10px;font-size: 16px; font-weight:bold;">
                                             <span id="text_shipping">0.00</span>
-                                        </td>
-
+                                        </td> 
+										
                                         <td style="padding: 5px 10px; font-size: 16px;"><?= lang('discount'); ?>
                                             <a href="#" id="ppdiscount">
                                                 <i class="fa fa-edit"></i>
@@ -691,34 +662,34 @@ if ($q->num_rows() > 0) {
                                             <span id="tds">0.00</span>
                                         </td>
                                     </tr>
-
+									
                                     <tr>
                                         <td style="padding: 5px 10px; border-top: 1px solid #666; font-size: 20px; font-weight:bold; background:#333; color:#FFF;" colspan="2">
                                             <?= lang('total_payable'); ?>
                                         </td>
-
+			
                                         <td colspan ="4" class="text-right" style="padding:5px 10px 5px 10px; font-size: 30px; border-top: 1px solid #666; font-weight:bold; background:#333; color:#FFF;" colspan="2">
                                             <span style="float:left" id="gtotal_kh"></span>
 											<span id="gtotal">0.00</span>
                                         </td>
                                     </tr>
                                 </table>
-
+								
                                 <div class="clearfix"></div>
                                 <div id="botbuttons" style="text-align:center;">
                                     <input type="hidden" name="biller" id="biller"
                                            value="<?= ($Owner || $Admin) ? $pos_settings->default_biller : $this->session->userdata('biller_id') ?>"/>
-
+									
 									<input type="hidden" name="saleman_1" id="saleman_1" value=""/>
 									<input type="hidden" name="delivery_by_1" id="delivery_by_1" value=""/>
 									<input type="hidden" name="reference_nob" id="reference_nob" value=""/>
 									<input type="hidden" name="sale_status" id="sale_status_1" value=""/>
-									<input type="hidden" name="address" id="address" value=""/>
+									<input type="hidden" name="address" id="address" value=""/>	   
 									<input type="hidden" name="date" value="" class="date_c">
 									<input type="hidden" name="sale_type" value="<?= $type; ?>" class="sale_type">
 									<input type="hidden" name="sale_type_id" value="<?= $type_id; ?>" class="sale_type_id">
-
-
+									
+									
                                     <div class="btn-group btn-group-justified">
                                         <div class="btn-group">
                                             <div class="btn-group btn-group-justified">
@@ -741,15 +712,15 @@ if ($q->num_rows() > 0) {
                     						<?php if($pos_settings->show_suspend_bar){ ?>
                     					<div class="btn-group">
                                         	<div class="btn-group btn-group-justified">
-                                           		<div class="btn-group">
+                                           		<div class="btn-group">                                                    											    	
 													<button type="button" title="Table / Room - <?= (isset($arrSuspend[$sid]['suspend_name']) ? '#'.$arrSuspend[$sid]['suspend_name'] : '')?>" style="height:68px;" class="btn btn-warning open-suspend" id="suspend">
-                                                        <i class="fa fa-info-circle"></i> <?= lang('suspend'); ?><?=(isset($arrSuspend[$sid]['suspend_not']) ? '#'.$arrSuspend[$sid]['suspend_not'] : '')?>
-                                                    </button>
+                                                        <i class="fa fa-info-circle"></i> <?= lang('suspend'); ?><?=(isset($arrSuspend[$sid]['suspend_not']) ? '#'.$arrSuspend[$sid]['suspend_not'] : '')?>                                                        
+                                                    </button>													
                                             	</div>
                                     		</div>
                                     	</div>
                                         	<?php } ?>
-
+                                        
                                         <div class="btn-group">
                                             <div class="btn-group btn-group-justified">
                                                 <div class="btn-group">
@@ -759,14 +730,13 @@ if ($q->num_rows() > 0) {
 													<button type="button" title="Print Order - <?= $pos_settings->print_items_list ?>" style="height:68px;width:50%;" class="btn btn-primary" id="print_order_drink">
                                                         <i class="fa fa-print"></i> <?= lang('order_drink'); ?>
                                                     </button>
-                                                    <input type="hidden" name="reference_nob" id="reference_nob" value="<?= $reference ? $reference : '' ?>"/>
                                                 </div>
                                             </div>
                                         </div>
 										<!--
                                         <div class="btn-group">
                                             <div class="btn-group btn-group-justified">
-                                                <div class="btn-group">
+                                                <div class="btn-group">                                                    
                                                     <button type="button" title="Print Bill - <?= $pos_settings->print_bill ?>" style="height:68px;" class="btn btn-primary" id="print_bill" style="margin-left: 0 !important;">
                                                         <i class="fa fa-print"></i> <?= lang('print_bill'); ?>
                                                     </button>
@@ -775,9 +745,9 @@ if ($q->num_rows() > 0) {
                                         </div>
 										-->
                     					<?php } else { ?>
-
+										
                     					<div class="btn-group">
-                                            <div class="btn-group btn-group-justified">
+                                            <div class="btn-group btn-group-justified"  style="width: 319px;">
                                                 <div class="btn-group">
                                                     <button type="button" title="Print Order - <?= $pos_settings->print_items_list ?>" class="btn btn-primary" id="print_order_food" style="width:50%;">
                                                         <i class="fa fa-print"></i> <?= lang('order_food'); ?>
@@ -788,13 +758,12 @@ if ($q->num_rows() > 0) {
                                                     <button type="button" title="Print Bill - <?= $pos_settings->print_bill ?>" class="btn btn-primary" id="print_bill"  style="margin-left: 0 !important;">
                                                         <i class="fa fa-print"></i> <?= lang('print_bill'); ?>
                                                     </button>
-                                                    <input type="hidden" name="reference_nob" id="reference_nob" value="<?= $reference ? $reference : '' ?>"/>
                                                 </div>
                                             </div>
                                         </div>
-
-                    					<?php } ?>
-                                        <div class="btn-group">
+										
+                    					<?php } ?>                                        
+                                        <div class="btn-group">	
                                             <button type="button" title="Payment - <?= $pos_settings->finalize_sale ?>" style="height:68px;" class="btn btn-success" id="payment">
                                                 <i class="fa fa-money"></i> <?= lang('payment'); ?>
                                             </button>
@@ -809,9 +778,9 @@ if ($q->num_rows() > 0) {
                                 <input type="hidden" name="pos_note" value="" id="pos_note">
                                 <input type="hidden" name="staff_note" value="" id="staff_note">
 								<input type="hidden" name="suspend_room" value="" id="suspend_room1">
-								<input type="hidden" name="suppend_name" value="<?= isset($suppend_name);?>">
+								<input type="hidden" name="suppend_name" value="<?=$suppend_name;?>">
 								<input type="hidden" name="pos_date" value="" id="pos_date">
-
+								
                                 <div id="payment-con">
                                     <?php for ($i = 1; $i <= 5; $i++) { ?>
                                         <input type="hidden" name="amount[]" id="amount_val_<?= $i ?>" value=""/>
@@ -831,19 +800,19 @@ if ($q->num_rows() > 0) {
                                         <input type="hidden" name="cc_cvv2[]" id="cc_cvv2_val_<?= $i ?>" value=""/>
                                         <input type="hidden" name="payment_note[]" id="payment_note_val_<?= $i ?>" value=""/>
 										<!-- Loan -->
-                                    <?php }
+                                    <?php }			
 									?>
                                 </div>
-
+								
 								<input type="hidden" name="depreciation_rate1[]" id="depreciation_rate1_val_1" value=""/>
 								<input type="hidden" name="depreciation_term[]" id="depreciation_term_val_1" value=""/>
 								<input type="hidden" name="depreciation_type[]" id="depreciation_type_val_1" value=""/>
 								<div id="loan1" style="display:none"></div>
-
+								
 								<input type="hidden" name="loan_rate" id="loan_rate" value=""/>
 								<input type="hidden" name="loan_type" id="loan_type" value=""/>
 								<input type="hidden" name="loan_term" id="loan_term" value=""/>
-
+				
                                 <input name="order_tax" type="hidden" value="<?= $suspend_sale ? $suspend_sale->order_tax_id : $Settings->default_tax_rate2; ?>" id="postax2">
                                 <input name="combine_table_id" type="hidden" value="<?= $combine_table ? $combine_table : '' ?>" id="combine_table">
                                 <input name="discount" type="hidden" value="<?= $suspend_sale ? $suspend_sale->order_discount_id : ''; ?>" id="posdiscount">
@@ -884,8 +853,8 @@ if ($q->num_rows() > 0) {
 												  <div id="myCarousel" class="carousel slide col-xs-12 col-md-12 col-lg-12" data-ride="carousel" style="padding-left:0;padding-right:0;height=70%;">
 													<!-- Indicators -->
 													<ol class="carousel-indicators">
-													<?php
-													for($x=0; $x < $totimg; $x++){
+													<?php 
+													for($x=0; $x < $totimg; $x++){ 
 														if($x == 0) {
 													?>
 															  <li data-target="#myCarousel" data-slide-to="<?= $x; ?>" class="active"></li>
@@ -895,7 +864,7 @@ if ($q->num_rows() > 0) {
 															  <li data-target="#myCarousel" data-slide-to="<?= $x; ?>"></li>
 													<?php
 														}
-													}
+													} 
 													?>
 													</ol>
 
@@ -914,7 +883,7 @@ if ($q->num_rows() > 0) {
 													  <div class="item">
 														<img src="<?= base_url(). $dir . $a_img[$x]; ?>" width="100%" class="img-responsive" style="height:640px;"/>
 													  </div>
-													<?php
+													<?php 
 															}
 														}
 													?>
@@ -962,7 +931,7 @@ if ($q->num_rows() > 0) {
                                 </div>
                             </div>
                         </div>
-
+						
                         <div style="clear:both;"></div>
                     </div>
                     <div style="clear:both;"></div>
@@ -975,16 +944,16 @@ if ($q->num_rows() > 0) {
 </div>
 <?php if ($layout != 2 && $layout != 3) {?>
 <?php if ($layout == 5) { ?>
-<div class="rotate btn-cat-con-layout5">
+<div class="rotate btn-cat-con-layout5">	
 <?php } else { ?>
-<div class="rotate btn-cat-con">
+<div class="rotate btn-cat-con">	
 <?php } ?>
 	<?php if($pos_settings->show_suspend_bar){
 		$this->db->select('name');
 		$this->db->from('erp_suspended');
         $this->db->where('id', isset($arrSuspend[$sid]['suspend_not']));
 		$q = $this->db->get();
-		$namef = '';
+		$namef = ''; 
 		if ($q->num_rows() > 0) {
 			foreach ($q->result() as $frow) {
 				$namef = $frow->name;
@@ -1007,7 +976,7 @@ if ($q->num_rows() > 0) {
 				$this->db->group_by('floor');
 				$q = $this->db->get();
 				$i=1;
-
+				
 				if ($q->num_rows() > 0) {
 					foreach ($q->result() as $row) {
 						echo '<h3>'.$row->floor.'</h3>';
@@ -1018,7 +987,7 @@ if ($q->num_rows() > 0) {
 						$this->db->where('floor', $row->floor);
 						$this->db->order_by('name', 'asc');
 						$query = $this->db->get();
-
+						
 						$this->db->select('*');
 						$this->db->from('erp_suspended');
 						$this->db->join('erp_suspended_bills', 'erp_suspended_bills.suspend_id = erp_suspended.id');
@@ -1029,22 +998,21 @@ if ($q->num_rows() > 0) {
 								$j++;
 								$fname[] = $data_->name;
 								$floor[] = $data_->floor;
-
 							}
 						}else{
 							$fname[] = '';
 							$floor[] = '';
 						}
-
+						
 						if ($query->num_rows() > 0) {
 							foreach ($query->result() as $suspend) {
 								$suspens = 'suspend';
 								if(strlen($suspend->customer)>10){
-									$cust = substr($suspend->customer,0,10);
+									$cust = substr($suspend->customer,0,10); 
 								}else{
 									$cust = $suspend->customer;
 								}
-
+								
 								$this->db->select('COUNT(suspend_id) AS ord');
 								$this->db->from('suspended_items');
 								$this->db->where(array('suspend_id' => $suspend->ids));
@@ -1055,7 +1023,7 @@ if ($q->num_rows() > 0) {
 										$count = $susp->ord;
 									}
 								}
-
+								
 								if(in_array($suspend->floor,$floor) and in_array($suspend->name,$fname)){
 									$default=date("H:i",strtotime($suspend->date));$currenttime=date("H:i");
 									if($pos_settings->show_suspend_bar == 40){
@@ -1063,7 +1031,7 @@ if ($q->num_rows() > 0) {
 										}else{
 											echo "<span style='position:relative;display: inline-table;'>
 												<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
-
+												
 												if($count > 0){
 													echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
 												}
@@ -1075,16 +1043,16 @@ if ($q->num_rows() > 0) {
 											 </span>";
 										}
 									}else{
-
+										
 										echo "<span style='position:relative;display: inline-table;'>
 											<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a  href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
 											if($count > 0){
 												echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
-											}
+											}	
 											echo "
 											<input type='checkbox' name='chsuspend' class='chsuspend checkbox' value='". $suspend->ids ."' style='position:absolute;top:0;right:5px;'/>
 											<button type=\"button\" value='" . $suspend->suspend_id . "' ".($suspens === "suspend" ? 'id="'.$suspend->ids.'"' : '' )." class='".($suspens === "suspend" ? 'btn-prni btn '.($suspend->sus_start == '0000-00-00 00:00:00'? 'btn-info': ($suspend->sus_start == ''? 'btn-info': 'btn-warning')).' sus_sale' : 'btn-prni btn suspend-button' )."' >
-												<span class='wrap_suspend".($suspens === "suspend" ? $suspend->ids : '')."'>" . ($suspens === "suspend" ? "<p class='suspend-name".$suspend->ids."'>" . $suspend->name . "</p><p class='suspend-date".$suspend->ids."'>" . $suspend->date . "</p><div class='sup_number".$suspend->ids."'>" . ($suspend->com_name == "" ? $cust : $suspend->com_name) . "</div><br/>" . $suspend->total : "Number " . $i ) . " (" . $suspend->count . ")</span>
+												<span class='wrap_suspend".($suspens === "suspend" ? $suspend->ids : '')."'>" . ($suspens === "suspend" ? "<p class='suspend-name".$suspend->ids."'>" . $suspend->name . "</p><div class='sup_number".$suspend->ids."'>" . ($suspend->com_name == "" ? $cust : $suspend->com_name) . "</div><br/>" . $suspend->total : "Number " . $i ) . " (" . $suspend->count . ")</span>
 												".$default." (".kpTime($default,$currenttime).")
 											</button>
 										 </span>";
@@ -1093,11 +1061,11 @@ if ($q->num_rows() > 0) {
 										$default=date("H:i",strtotime($suspend->sus_start));$currenttime=date("H:i");
 										echo "<span style='position:relative;display: inline-table;'>
 												<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
-
+												
 												if($count > 0){
 													echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
 												}
-
+												
 												echo "<input type='checkbox' name='chsuspend' class='chsuspend' value='". $suspend->ids ."' style='position:absolute;right:5px;'/>
 												<button type=\"button\" value='" . $suspend->sid . "' class='btn-prni btn btn-warning suspend-button' id='". $suspend->name ."' >
 													<span class='wrap_suspend".($suspens === "suspend" ? $suspend->ids : '')."'>" . ($suspens === "suspend" ? "<p class='suspend-name".$suspend->ids."'>" . $suspend->name . "</p><div class='sup_number".$suspend->ids."'>" . ($suspend->com_name == "" ? $suspend->sus_note : $suspend->com_name) . "</div><br/>" . $suspend->total : "Number " . $i ) . " (" . $suspend->count . ")</span>
@@ -1117,7 +1085,7 @@ if ($q->num_rows() > 0) {
 					}
 				}
 			}else{
-
+				
 				$warehouses = explode(',',$this->session->userdata('warehouse_id'));
 				$this->db->distinct();
 				$this->db->select('*');
@@ -1126,7 +1094,7 @@ if ($q->num_rows() > 0) {
 				$this->db->group_by('floor');
 				$q = $this->db->get();
 				$i=1;
-
+				
 				if ($q->num_rows() > 0) {
 					foreach ($q->result() as $row) {
 						echo '<h3>'.$row->floor.'</h3>';
@@ -1138,11 +1106,11 @@ if ($q->num_rows() > 0) {
 						$this->db->where_in('erp_suspended.warehouse_id',$warehouses);
 						$this->db->order_by('name', 'asc');
 						$query = $this->db->get();
-
+						
 						$this->db->select('*');
 						$this->db->from('erp_suspended');
 						$this->db->join('erp_suspended_bills', 'erp_suspended_bills.suspend_id = erp_suspended.id');
-
+						
 						$data = $this->db->get();
 						if($data->num_rows() > 0){
 							$j=0;
@@ -1155,16 +1123,16 @@ if ($q->num_rows() > 0) {
 							$fname[] = '';
 							$floor[] = '';
 						}
-
+						
 						if ($query->num_rows() > 0) {
 							foreach ($query->result() as $suspend) {
 								$suspens = 'suspend';
 								if(strlen($suspend->customer)>10){
-									$cust = substr($suspend->customer,0,10);
+									$cust = substr($suspend->customer,0,10); 
 								}else{
 									$cust = $suspend->customer;
 								}
-
+								
 								$this->db->select('COUNT(suspend_id) AS ord');
 								$this->db->from('suspended_items');
 								$this->db->where(array('suspend_id' => $suspend->ids));
@@ -1175,7 +1143,7 @@ if ($q->num_rows() > 0) {
 										$count = $susp->ord;
 									}
 								}
-
+								
 								if(in_array($suspend->floor,$floor) and in_array($suspend->name,$fname)){
 									$default=date("H:i",strtotime($suspend->date));$currenttime=date("H:i");
 									if($pos_settings->show_suspend_bar == 40){
@@ -1183,7 +1151,7 @@ if ($q->num_rows() > 0) {
 										}else{
 											echo "<span style='position:relative;display: inline-table;'>
 												<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
-
+												
 												if($count > 0){
 													echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
 												}
@@ -1195,12 +1163,12 @@ if ($q->num_rows() > 0) {
 											 </span>";
 										}
 									}else{
-
+										
 										echo "<span style='position:relative;display: inline-table;'>
 											<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a  href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
 											if($count > 0){
 												echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
-											}
+											}	
 											echo "
 											<input type='checkbox' name='chsuspend' class='chsuspend checkbox' value='". $suspend->ids ."' style='position:absolute;top:0;right:5px;'/>
 											<button type=\"button\" value='" . $suspend->suspend_id . "' ".($suspens === "suspend" ? 'id="'.$suspend->ids.'"' : '' )." class='".($suspens === "suspend" ? 'btn-prni btn '.($suspend->sus_start == '0000-00-00 00:00:00'? 'btn-info': ($suspend->sus_start == ''? 'btn-info': 'btn-warning')).' sus_sale' : 'btn-prni btn suspend-button' )."' >
@@ -1213,11 +1181,11 @@ if ($q->num_rows() > 0) {
 										$default=date("H:i",strtotime($suspend->sus_start));$currenttime=date("H:i");
 										echo "<span style='position:relative;display: inline-table;'>
 												<a id='clear_suspend' hrefs='".base_url()."pos/delete_suspend/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;left:0;padding-left:5%;padding-right:5%;cursor:pointer;' class='btn-danger clear_suspend'><i class='fa fa-times'></i></a><a href='".base_url()."pos/seperate/".$suspend->ids."' style='text-decoration:none;position:absolute;bottom:-5%;right:5%;cursor:pointer;padding-left:5%;padding-right:5%;' class='btn-primary' data-toggle='modal' data-target='#myModal'><i class='fa fa-hourglass-half'></i></a>";
-
+												
 												if($count > 0){
 													echo "<p style='text-decoration:none;position:absolute;top:0;left:0;padding:5px;' class='btn-warning clear_suspend'>".$count."</p>";
 												}
-
+												
 												echo "<input type='checkbox' name='chsuspend' class='chsuspend' value='". $suspend->ids ."' style='position:absolute;right:5px;'/>
 												<button type=\"button\" value='" . $suspend->sid . "' class='btn-prni btn btn-warning suspend-button' id='". $suspend->name ."' >
 													<span class='wrap_suspend".($suspens === "suspend" ? $suspend->ids : '')."'>" . ($suspens === "suspend" ? "<p class='suspend-name".$suspend->ids."'>" . $suspend->name . "</p><div class='sup_number".$suspend->ids."'>" . ($suspend->com_name == "" ? $suspend->sus_note : $suspend->com_name) . "</div><br/>" . $suspend->total : "Number " . $i ) . " (" . $suspend->count . ")</span>
@@ -1237,9 +1205,9 @@ if ($q->num_rows() > 0) {
 					}
 				}
 			}
-
+			
 		?>
-
+			
 	</div>
 	<div style="position:relative;">
 		<button class="btn btn-primary combine_table">Apply</button>
@@ -1256,7 +1224,7 @@ if ($q->num_rows() > 0) {
             if(in_array($category->id, $cate)){
 
             }else{
-               echo "<button id=\"category-" . $category->id . "\" type=\"button\" value='" . $category->id . "' class=\"btn-prni category\" ><img src=\"assets/uploads/thumbs/" . ($category->image ? $category->image : 'no_image.png') . "\" style='width:" . $this->Settings->twidth . "px;height:" . $this->Settings->theight . "px;' class='img-rounded img-thumbnail' /><span>" . $category->name . "</span></button>";
+               echo "<button id=\"category-" . $category->id . "\" type=\"button\" value='" . $category->id . "' class=\"btn-prni category\" ><img src=\"assets/uploads/thumbs/" . ($category->image ? $category->image : 'no_image.png') . "\" style='width:" . $this->Settings->twidth . "px;height:" . $this->Settings->theight . "px;' class='img-rounded img-thumbnail' /><span>" . $category->name . "</span></button>"; 
             }
         }
         //}
@@ -1269,7 +1237,7 @@ if ($q->num_rows() > 0) {
         <?php
         if (!empty($subcategories)) {
             foreach ($subcategories as $category) {
-                echo "<button id=\"subcategory-" . $category->id . "\" type=\"button\" value='" . $category->id . "' class=\"btn-prni subcategory\" ><img src=\"assets/uploads/thumbs/" . ($category->image ? $category->image : 'no_image.png') . "\" style='width:" . $this->Settings->twidth . "px;height:" . $this->Settings->theight . "px;' class='img-rounded img-thumbnail' /><span>" . $category->name . "</span></button>";
+                echo "<button id=\"subcategory-" . $category->id . "\" type=\"button\" value='" . $category->id . "' class=\"btn-prni subcategory\" ><img src=\"assets/uploads/thumbs/" . ($category->image ? $category->image : 'no_image.png') . "\" style='width:" . $this->Settings->twidth . ";height:" . $this->Settings->theight . "px;' class='img-rounded img-thumbnail' /><span>" . $category->name . "</span></button>";
             }
         }
         ?>
@@ -1315,7 +1283,7 @@ if ($q->num_rows() > 0) {
 						foreach ($query->result() as $suspend) {
 							$suspens = 'suspend';
 							if(strlen($suspend->customer)>10){
-								$cust = substr($suspend->customer,0,10);
+								$cust = substr($suspend->customer,0,10); 
 							}else{
 								$cust = $suspend->customer;
 							}
@@ -1354,11 +1322,10 @@ if ($q->num_rows() > 0) {
 					}
 				}
 			}
-		?>
+		?>			
 	</div>
 </div>
 <?php } ?>
-
 <div class="modal fade in" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="payModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -1396,7 +1363,7 @@ if ($q->num_rows() > 0) {
 										foreach ($billers as $biller1) {
 											$bl[$biller1->id] = $biller1->company != '-' ? $biller1->company : $biller1->name;
 										}
-										echo form_dropdown('biller', $bl, (isset($_POST['biller']) ? $_POST['biller'] : ''), 'class="form-control" id="posbiller" required="required"');
+										echo form_dropdown('biller', $bl, (isset($_POST['biller']) ? $_POST['biller'] : $this->session->userdata('biller_id')), 'class="form-control" id="posbiller" required="required" style="pointer-events: none;"');
 										?>
 									</div>
 									<div class="col-sm-6">
@@ -1406,23 +1373,23 @@ if ($q->num_rows() > 0) {
 								</div>
                             </div>
                         <?php } ?>
-
+						
                         <div class="form-group">
                             <div class="row">
 									<div class="col-sm-6">
 										<?= form_textarea('sale_note', '', 'id="sale_note" class="form-control kb-text skip" style="height: 35px;" placeholder="' . lang('sale_note') . '" maxlength="250"'); ?>
 									</div>
-
-								<?php if(isset($suppend_name)) {  ?>
-
+									
+								<?php if($suppend_name){  ?>
+								
 									<div class="col-sm-6">
-										<?php
-											echo form_dropdown('suspend_room', $suppend_name, "", 'id="suspend_room" placeholder="'.lang('suspend').'" disabled class="form-control pos-input-tip" style="width:100%;"');
+										<?php 
+											echo form_dropdown('suspend_room', $suppend_name, "", 'id="suspend_room" placeholder="'.lang('suspend').'" disabled class="form-control pos-input-tip" style="width:100%;"');								
 										?>
 									</div>
-
+									
 								<?php } else{ ?>
-
+								
 									<div class="col-sm-6">
 										<?php
 											//form_textarea('staffnote', '', 'id="staffnote" class="form-control kb-text skip" style="height: 50px;" placeholder="' . lang('staff_note') . '" maxlength="250"');
@@ -1451,7 +1418,7 @@ if ($q->num_rows() > 0) {
                                 <div class="col-sm-6">
                                     <?= lang("saleman", "saleman"); ?>
 									<select name="saleman[]" id="saleman" class="form-control saleman">
-									<?php
+									<?php 
 										foreach($agencies as $agency){
 											if($this->session->userdata('username') == $agency->username){
 												echo '<option value="'.$this->session->userdata('user_id').'" selected>'.lang($this->session->userdata('username')).'</option>';
@@ -1462,18 +1429,18 @@ if ($q->num_rows() > 0) {
 									?>
 									</select>
                                 </div>
-
+								
                                 <div class="col-sm-6">
 									<?= lang("delivery_by", "delivery_by"); ?>
 									<select name="delivery_by[]" id="delivery_by" class="form-control delivery_by">
-										<?php
+										<?php 
 											foreach($drivers as $driver){
 												echo '<option value="'.$driver->id.'" selected>'.$driver->name.'</option>';
 											}
 										?>
 									</select>
                                 </div>
-
+								
 								<div class="col-sm-6">
 									<div class="form-group">
 										<?= lang("sale_status", "sale_status"); ?>
@@ -1481,20 +1448,22 @@ if ($q->num_rows() > 0) {
 										echo form_dropdown('sale_status', $sst, '', 'class="form-control input-tip" required="required" id="sale_status"'); ?>
 									</div>
 								</div>
-
+								
 								<div class="col-sm-6">
 									<?= lang("reference_no", "slref"); ?>
-                                    <div class="form-group">
-                                        <div class="input-group">
-                                                <?php echo form_input('reference_no', $reference ? $reference : "",'  class="form-control input-tip" id="slref"'); ?>
-                                            <input type="hidden"  name="temp_reference_no"  id="temp_reference_no" value="<?= $reference ? $reference : "" ?>" />
-                                            <div class="input-group-addon no-print" style="padding: 2px 5px;background-color:white;">
-                                                <input type="checkbox" name="ref_status" id="ref_st" value="1" style="margin-top:3px;">
-                                            </div>
-                                        </div>
-                                    </div>
+									<div style="float:left;width:100%;">
+										<div class="form-group">
+											<div class="input-group">  
+													<?php echo form_input('reference_no', $reference ? $reference : "",'  class="form-control input-tip" id="slref"'); ?>
+												<input type="hidden"  name="temp_reference_no"  id="temp_reference_no" value="<?= $reference ? $reference : "" ?>" />
+												<div class="input-group-addon no-print" style="padding: 2px 5px;background-color:white;">
+													<input type="checkbox" name="ref_status" id="ref_st" value="1" style="margin-top:3px;">
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
-
+								
                             </div>
                         </div>
 						<div class="form-group">
@@ -1502,25 +1471,22 @@ if ($q->num_rows() > 0) {
                                 <div class="col-sm-6">
                                     <!--<?= form_textarea('staffnote', '', 'id="staffnote" class="form-control kb-text skip" style="height: 35px;" placeholder="' . lang('staff_note') . '" maxlength="250"'); ?>-->
                                 </div>
-<!--                                -->
-<!--                                <div class="col-sm-6">-->
-<!--									<button type="button" class="btn btn-primary col-md-12 addButton" style="display:none;">-->
-<!--										<i class="fa fa-plus"></i> --><?//= lang('add_more_payments') ?>
-<!--									</button>-->
-<!--                                </div>-->
-
+                                <div class="col-sm-6">
+									<button type="button" class="btn btn-primary col-md-12 addButton">
+										<i class="fa fa-plus"></i> <?= lang('add_more_payments') ?>
+									</button>
+                                </div>
                             </div>
                         </div>
                         <div class="clearfir"></div>
                         <div id="payments">
-							<!-- <div class="col-md-12 col-sm-9" style="padding:0;"> -->
-							<div style="padding:0;">
+							<div class="col-md-12 col-sm-12" style="padding:0;">
 								<div class="font16">
 									<table class="table table-bordered table-condensed table-striped" style="font-size: 1.2em; font-weight: bold; margin-bottom: 0;">
 										<tbody>
 											<tr>
-												<th width="30%" style="text-align:left;font-size:16px !important;"><?= lang("currency"); ?></th>
-												<th  style="text-align:center;font-size:16px !important;"><?= lang("USD"); ?></th>
+												<th width="30%" style="text-align:left;"><?= lang("currency"); ?></th>
+												<th  style="text-align:center;"><?= lang("USD"); ?></th>
 												<?php
 													$this->db->select('*');
 													$this->db->from('erp_currencies');
@@ -1530,76 +1496,76 @@ if ($q->num_rows() > 0) {
 													foreach ($query as $row)
 													{
 												?>
-														<th  style="text-align:center;font-size:16px !important;"><?=$row->code?></th>
+														<th  style="text-align:center;"><?=$row->code?></th>
 												<?php
 													}
 												?>
 											</tr>
 											<tr>
-												<td width="30%" style="height: 50px;font-size:16px !important;"><?= lang("total_items"); ?></td>
-												<td class="text-right" style="font-size:16px !important;"><span id="item_count">0.00</span></td>
+												<td width="30%" style="height: 50px;"><?= lang("total_items"); ?></td>
+												<td class="text-right"><span id="item_count">0.00</span></td>
 												<?php
 													foreach ($query as $row)
 													{
 												?>
-														<td class="text-right" style="font-size:16px !important;"><span class="item_count">0.00</span></td>
+														<td class="text-right"><span class="item_count">0.00</span></td>
 												<?php
 													}
 												?>
 											</tr>
 											<tr>
-												<td width="30%" style="height: 50px; font-size:16px !important;"><?= lang("total_payable"); ?></td>
-												<td class="text-right" style="font-size:16px !important;"><span id="twt">0.00</span></td>
+												<td width="30%" style="height: 50px;"><?= lang("total_payable"); ?></td>
+												<td class="text-right"><span id="twt">0.00</span></td>
 												<?php
 													foreach ($query as $row)
 													{
 												?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_tpay" rate="<?=$row->rate?>" id="twt">0.00</span></td>
+														<td class="text-right"><span class="curr_tpay" rate="<?=$row->rate?>" id="twt">0.00</span></td>
 												<?php
 													}
 												?>
 											</tr>
 											<tr>
-												<td width="30%" style="height: 50px; font-size:16px !important;"><?= lang("paid_amount"); ?></td>
-												<td class="text-right" style="font-size:16px !important;"><input name="amount[]" type="text" id="amount_1" value="" class="pa form-control input-lg kb-pad amount" style="text-align:right;"/></td>
+												<td width="30%" style="height: 50px;"><?= lang("paid_amount"); ?></td>
+												<td class="text-right"><input name="amount[]" type="text" id="amount_1" value="" class="pa form-control input-lg kb-pad amount" style="text-align:right;"/></td>
 												<?php
 													foreach ($query as $row)
 													{
 												?>
-														<td class="text-right" style="font-size:16px !important;">
+														<td class="text-right">
 															<input name="other_cur_paid[]" rate="<?=$row->rate?>" type="text" id="other_cur_paid_1" class="form-control input-lg kb-pad currencies_payment" style="text-align:right;"/>
 														</td>
 												<?php
 													}
 												?>
 											</tr>
-
+											
 											<tr>
-												<td  rowspan="2" width="30%" style="text-align:left;font-size:16px !important;"><?= lang("remaining"); ?></td>
-												<td class="text-right" style="font-size:16px !important;"><span id="remain_1" class="main_remain_1">0.00</span></td>
+												<td  rowspan="2" width="30%" style="text-align:left;"><?= lang("remaining"); ?></td>
+												<td class="text-right"><span id="remain_1" class="main_remain_1">0.00</span></td>
 												<?php
 													foreach ($query as $row)
 													{
 												?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_remain_1" rate="<?=$row->rate?>" id="remain_1">0</span></td>
+														<td class="text-right"><span class="curr_remain_1" rate="<?=$row->rate?>" id="remain_1">0</span></td>
 												<?php
 													}
 												?>
 											</tr>
 											<tr>
-												<td class="text-right" style="font-size:16px !important;"><span id="remain" class="main_remain" style="font-size:16px !important;">0.00</span></td>
+												<td class="text-right"><span id="remain" class="main_remain">0.00</span></td>
 												<?php
 													foreach ($query as $row)
 													{
 												?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_remain" rate="<?=$row->rate?>" id="remain">0</span></td>
+														<td class="text-right"><span class="curr_remain" rate="<?=$row->rate?>" id="remain">0</span></td>
 												<?php
 													}
 												?>
 											</tr>
 											<tr>
-												<td  rowspan="2" width="30%" style="text-align:left;font-size:16px !important;"><?= lang("change"); ?></td>
-												<td class="text-right" style="font-size:16px !important;"><span id="change_1">0.00</span></td>
+												<td  rowspan="2" width="30%" style="text-align:left;"><?= lang("change"); ?></td>
+												<td class="text-right"><span id="change_1">0.00</span></td>
 												<?php
 												$this->db->select('*');
 												$this->db->from('erp_currencies');
@@ -1609,22 +1575,22 @@ if ($q->num_rows() > 0) {
 													foreach ($q as $row)
 													{
 													?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_change_1" rate="<?=$row->rate?>" id="change">0</span></td>
+														<td class="text-right"><span class="curr_change_1" rate="<?=$row->rate?>" id="change">0</span></td>
 													<?php
 													}
 												}else{
 													foreach ($query as $row)
 													{
 													?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_change_1" rate="<?=$row->rate?>" id="change_1">0</span></td>
+														<td class="text-right"><span class="curr_change_1" rate="<?=$row->rate?>" id="change_1">0</span></td>
 													<?php
 													}
 												}
-
+													
 												?>
 											</tr>
 											<tr>
-												<td class="text-right" style="font-size:16px !important;"><span id="change">0.00</span></td>
+												<td class="text-right"><span id="change">0.00</span></td>
 												<?php
 												$this->db->select('*');
 												$this->db->from('erp_currencies');
@@ -1634,18 +1600,18 @@ if ($q->num_rows() > 0) {
 													foreach ($q as $row)
 													{
 													?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_change" rate="<?=$row->rate?>" id="change">0</span></td>
+														<td class="text-right"><span class="curr_change" rate="<?=$row->rate?>" id="change">0</span></td>
 													<?php
 													}
 												}else{
 													foreach ($query as $row)
 													{
 													?>
-														<td class="text-right" style="font-size:16px !important;"><span class="curr_change" rate="<?=$row->rate?>" id="change">0</span></td>
+														<td class="text-right"><span class="curr_change" rate="<?=$row->rate?>" id="change">0</span></td>
 													<?php
 													}
 												}
-
+													
 												?>
 											</tr>
 										</tbody>
@@ -1707,7 +1673,7 @@ if ($q->num_rows() > 0) {
 												   class="pa form-control input-lg kb-pad amount"/>
 										</div>
 										<?php
-
+										
 										foreach($query as $val) {
 											?>
 											<div class="form-group">
@@ -1718,17 +1684,19 @@ if ($q->num_rows() > 0) {
 											<?php
 										}
 										?>
-                                    </div>-->
+                                    </div>-->									
 										<div class="col-sm-6">
 											<div class="form-group" id="bank_account_fg">
 												<?= lang("bank_account", "bank_account_1"); ?><span style="float: right;" id="bank_account_span"></span>
 												<?php
+													$bank = array('0' => '-- Select Bank Account --');
 													if ($Owner || $Admin) {
 														foreach($bankAccounts as $bankAcc) {
 															$bank[$bankAcc->accountcode] = $bankAcc->accountcode . ' | '. $bankAcc->accountname;
 														}
 														echo form_dropdown('bank_account', $bank, '', 'id="bank_account_1" required="required" class="ba form-control kb-pad bank_account"');
 													} else {
+														$ubank = array('0' => '-- Select Bank Account --');
 														foreach($userBankAccounts as $userBankAccount) {
 															$ubank[$userBankAccount->accountcode] = $userBankAccount->accountcode . ' | '. $userBankAccount->accountname;
 														}
@@ -1758,7 +1726,7 @@ if ($q->num_rows() > 0) {
                                             <textarea name="payment_note[]" id="payment_note_1"  style="height: 60px;" class="pa form-control kb-text payment_note" placeholder="<?php echo lang('payment_note') ?>"></textarea>
                                         </div>
                                     </div>
-
+									
                                     <div class="row">
                                         <div class="col-sm-12">
                                             <div class="form-group gc_1" style="display: none;">
@@ -1768,12 +1736,12 @@ if ($q->num_rows() > 0) {
 
                                                 <div id="gc_details_1"></div>
                                             </div>
-
+											
 											<div class="form-group dp_1" style="display: none;">
                                                 <?= lang("deposit_amount", "deposit_amount_1"); ?>
                                                 <div id="dp_details_1"></div>
                                             </div>
-
+											
                                             <div class="pcc_1" style="display:none;">
                                                 <div class="form-group">
                                                     <input type="text" id="swipe_1" class="form-control swipe"
@@ -1834,7 +1802,7 @@ if ($q->num_rows() > 0) {
                                                     </div>
                                                 </div>
                                             </div>
-
+										
 											<div class="depreciation_1" style="display:none;">
                                                 <div class="form-group">
 													<?= lang("depreciation_term", "depreciation_1"); ?>
@@ -1910,11 +1878,11 @@ if ($q->num_rows() > 0) {
 													<div class="dep_tbl" style="display:none;">
 														<table border="1" width="100%" class="table table-bordered table-condensed tbl_dep" id="tbl_dep">
 															<tbody>
-
+														
 															</tbody>
 														</table>
 														<table id="export_tbl" width="70%" style="display:none;">
-
+														
 														</table>
 													</div>
 												</div>
@@ -1946,13 +1914,13 @@ if ($q->num_rows() > 0) {
                                 </div>
                             </div>
                         </div>
-
+						
                         <div id="multi-payment"></div>
 							<!--<button type="button" class="btn btn-primary col-md-12 addButton"><i
                                 class="fa fa-plus"></i> <?= lang('add_more_payments') ?></button>-->
 
                         <div style="clear:both; height:15px;"></div>
-
+                        
                     </div>
                     <div class="col-md-2 col-sm-3 text-center">
                         <span style="font-size: 1.2em; font-weight: bold;"><?= lang('quick_cash'); ?></span>
@@ -1969,15 +1937,15 @@ if ($q->num_rows() > 0) {
                             <button type="button" class="btn btn-lg btn-danger"
                                     id="clear-cash-notes"><?= lang('clear'); ?></button>
 							<hr />
-							<div class="btn-group">
+							<div class="btn-group">	
                                 <button type="button" style="font-size: 1.2em; font-weight: bold; height:80px;" class="btn btn-success" id="submit-sale">
                                     <i class="fa fa-money"></i> <?= lang('save'); ?>
                                 </button>
 							</div>
-
+										
 						</div>
                         </div>
-
+						
                     </div>
                 </div>
             </div>
@@ -2080,7 +2048,7 @@ if ($q->num_rows() > 0) {
                             <div id="poptions-div"></div>
                         </div>
                     </div>
-
+					
 					<div class="form-group col-sm-12">
                         <label for="pgroup_prices" class="col-sm-4 control-label"><?= lang('group_price') ?></label>
 
@@ -2089,17 +2057,16 @@ if ($q->num_rows() > 0) {
                         </div>
                     </div>
                     <?php if ($Settings->product_discount) { ?>
-                        <?php if ($Admin || $Owner || $GP['sales-discount']) { ?>
-                            <div class="form-group col-sm-12">
-                                <label for="pdiscount"
-                                       class="col-sm-4 control-label"><?= lang('product_discount') ?></label>
-                                <div class="col-sm-8">
-                                    <input type="text" class="form-control kb-pad" id="pdiscount">
-                                </div>
+                        <div class="form-group col-sm-12">
+                            <label for="pdiscount"
+                                   class="col-sm-4 control-label"><?= lang('product_discount') ?></label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control kb-pad" id="pdiscount">
+								
                             </div>
-                        <?php }
-                    }
-                    ?>
+                        </div>
+                    <?php } ?>
 					<?php if ($Admin || $Owner || $GP['sales-price']) { ?>
                     <div class="form-group col-sm-12">
                         <label for="pprice" class="col-sm-4 control-label"><?= lang('unit_price') ?></label>
@@ -2124,7 +2091,7 @@ if ($q->num_rows() > 0) {
                         <label for="pnote" class="col-sm-4 control-label"><?= lang('product_note') ?></label>
 
                         <div class="col-sm-8">
-							<div class="input-group">
+							<div class="input-group"> 
 								<textarea class="form-control kb-pad" id="pnote" rows="5" cols="20" style="width: 291px; height: 35px;"></textarea>
 								<div class="input-group-addon no-print" style="padding: 2px 5px;">
 									<a href="<?= site_url('system_settings/show_note'); ?>" id="add-productnote" class="external" data-toggle="modal" data-target="#myModal">
@@ -2134,7 +2101,7 @@ if ($q->num_rows() > 0) {
 							</div>
                         </div>
 					</div>
-					<div class="form-group col-sm-12" >
+					<div class="form-group" >
                     <table class="table table-bordered table-striped">
                         <tr>
                             <th style="width:25%;"><?= lang('net_unit_price'); ?></th>
@@ -2144,7 +2111,7 @@ if ($q->num_rows() > 0) {
                         </tr>
                     </table>
 					<div class="images row">
-
+						
 					</div>
                     <input type="hidden" id="punit_price" value=""/>
                     <input type="hidden" id="old_tax" value=""/>
@@ -2185,7 +2152,7 @@ if ($q->num_rows() > 0) {
 							</tr>
 						</thead>
 						<tbody>
-
+						
 						</tbody>
 					</table>
                     <table class="table table-bordered table-striped table-hover">
@@ -2206,7 +2173,7 @@ if ($q->num_rows() > 0) {
 							</tr>
 						</thead>
 						<tbody class="test">
-
+							
 						</tbody>
 					</table>
                 </form>
@@ -2261,7 +2228,7 @@ if ($q->num_rows() > 0) {
 							</tr>
 						</thead>
 						<tbody class="floor">
-
+							
 						</tbody>
 					</table>
                 </form>
@@ -2449,14 +2416,14 @@ if ($q->num_rows() > 0) {
 							<td>
 								<button type="button" class="btn bdarkGreen col-md-12 addButton open-subcategory"> <?= $pos_settings->toggle_subcategory_slider ?></button>
 							</td>
-						</tr>
+						</tr>                    
 						<tr>
 							<td><?= $pos_settings->today_sale ?></td>
 							<td><?= lang('today_sale') ?></td>
 							<td>
 								<button type="button" class="btn bdarkGreen col-md-12" id="today_profit" data-placement="bottom" data-html="true" href="<?= site_url('pos/today_sale') ?>" data-toggle="modal" data-target="#myModal"> <?= $pos_settings->today_sale ?></button>
 							</td>
-						</tr>
+						</tr>                    
 						<tr>
 							<td><?= $pos_settings->close_register ?></td>
 							<td><?= lang('close_register') ?></td>
@@ -2484,8 +2451,8 @@ if ($q->num_rows() > 0) {
 							<td>
 								<button type="button" class="btn bdarkGreen col-md-12 addButton" id="clearData"> <?= $pos_settings->cancel_sale ?></button>
 							</td>
-						</tr>
-
+						</tr>  
+						
 						<tr>
 							<td><?= $pos_settings->suspend_sale ?></td>
 							<td><?= lang('suspend_sale') ?></td>
@@ -2493,7 +2460,7 @@ if ($q->num_rows() > 0) {
 								<button type="button" class="btn bdarkGreen col-md-12 addButton open-suspend"> <?= $pos_settings->suspend_sale ?></button>
 							</td>
 						</tr>
-
+						
 						<tr>
 							<td><?= $pos_settings->print_items_list ?></td>
 							<td><?= lang('print_items_list') ?></td>
@@ -2501,7 +2468,7 @@ if ($q->num_rows() > 0) {
 								<button type="button" class="btn bdarkGreen col-md-12 addButton" id="print_orders"> <?= $pos_settings->print_items_list ?></button>
 							</td>
 						</tr>
-
+						
 						<tr>
 							<td><?= $pos_settings->print_bill ?></td>
 							<td><?= lang('print_bill') ?></td>
@@ -2509,7 +2476,7 @@ if ($q->num_rows() > 0) {
 								<button type="button" class="btn bdarkGreen col-md-12 addButton" id="print_bills"> <?= $pos_settings->print_bill ?></button>
 							</td>
 						</tr>
-
+						
 						<tr>
 							<td><?= $pos_settings->finalize_sale ?></td>
 							<td><?= lang('finalize_sale') ?></td>
@@ -2533,21 +2500,13 @@ if ($q->num_rows() > 0) {
                         class="fa fa-2x">&times;</i></button>
                 <h4 class="modal-title" id="dsModalLabel"><?= lang('edit_order_discount'); ?></h4>
             </div>
-            <?php if ($Admin || $Owner || $GP['sales-discount']) { ?>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <?= lang("order_discount", "order_discount_input"); ?>
-                        <?php echo form_input('order_discount_input', '', 'class="form-control kb-pad" id="order_discount_input"'); ?>
-                    </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <?= lang("order_discount", "order_discount_input"); ?>
+                    <?php echo form_input('order_discount_input', '', 'class="form-control kb-pad" id="order_discount_input"'); ?>
                 </div>
-            <?php } else { ?>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <?= lang("order_discount", "order_discount_input"); ?>
-                        <?php echo form_input('order_discount_input', '', 'class="form-control kb-pad" id="order_discount_input" readonly="readonly"'); ?>
-                    </div>
-                </div>
-            <?php } ?>
+
+            </div>
             <div class="modal-footer">
                 <button type="button" id="updateOrderDiscount" class="btn btn-primary"><?= lang('update') ?></button>
             </div>
@@ -2563,7 +2522,7 @@ if ($q->num_rows() > 0) {
                         class="fa fa-2x">&times;</i></button>
                 <h4 class="modal-title" id="txModalLabel"><?= lang('edit_order_tax'); ?></h4>
             </div>
-
+						
 			<div class="modal-body">
                 <div class="form-group">
                     <?=lang("order_tax", "order_tax_input");?>
@@ -2576,7 +2535,7 @@ if ($q->num_rows() > 0) {
 					?>
                 </div>
             </div>
-
+			
             <div class="modal-footer">
                 <button type="button" id="updateOrderTax" class="btn btn-primary"><?= lang('update') ?></button>
             </div>
@@ -2592,14 +2551,14 @@ if ($q->num_rows() > 0) {
                         class="fa fa-2x">&times;</i></button>
                 <h4 class="modal-title" id="txModalLabel"><?= lang('edit_shipping'); ?></h4>
             </div>
-
+						
 			<div class="modal-body">
                 <div class="form-group">
                     <?=lang("shipping", "shipping");?>
 					<?php echo form_input('shipping', "", 'class="form-control input-tip" id="shipping" style="width:100%;"'); ?>
                 </div>
             </div>
-
+			
             <div class="modal-footer">
                 <button type="button" id="add_shipping" class="btn btn-primary"><?= lang('add') ?></button>
             </div>
@@ -2689,54 +2648,53 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         lth = $('#left-top').height(),
         lbh = $('#left-bottom').height();
 		var bar_t = 0;
-        <?php if($layout && $layout != 1) { ?>
-        var bar_t = 98;
-        <?php } ?>
-        <?php if($layout == 5) {?>
-        $('#box-item').remove();
+		<?php if($layout && $layout != 1) { ?>;
+		var bar_t = 98;
+		<?php } ?>;
+		<?php if($layout == 5) {?>;
+		$('#box-item').remove();
 		$('#box-item #box-item').remove();
 		$('.btn_gift_card').hide();
-		cat_id=0;
+		cat_id=0;			
         $('#item-list').css("height", wh - bar_t - 610);
         $('#item-list').css("min-height", 265);
-        <?php } else { ?>
-        $('#item-list').css("height", wh - bar_t - 140);
+		<?php } else { ?>;
+		$('#item-list').css("height", wh - bar_t - 140);
         $('#item-list').css("min-height", 515);
-        <?php } ?>
-        <?php if($layout == 3) {?>
+		<?php } ?>;
+		<?php if($layout == 3) {?>;
         $('#left-middle').css("height", wh - lth - lbh - bar_t + 18);
 		$('#left-middle').css("min-height", 325);
 		$('#product-list').css("height", wh - lth - lbh - bar_t + 12);
-        <?php } else { ?>
+		<?php } else { ?>;
         $('#left-middle').css("height", wh - lth - lbh - bar_t - 100);
 		$('#left-middle').css("min-height", 325);
         $('#product-list').css("height", wh - lth - lbh - bar_t - 105);
-        <?php } ?>
+		<?php } ?>;
         $('#product-list').css("min-height", 320);
 		$('#suspend-slider').css("height", wh - lth - lbh - bar_t - 100);
         $('#suspend-slider').css("min-height", 555);
 		$('#suspend-list').css("height", wh - lth - lbh - bar_t - 105);
         $('#suspend-list').css("min-height", 550);
-
-
-        <?php if($layout == 5) {?>
-        $('#product-list').css("min-height", 20);
+		
+		<?php if($layout == 5) {?>;		
+		$('#product-list').css("min-height", 20);		
         $('#product-list').css("height", wh - lth - lbh - bar_t - 250);
         $('#left-middle').css("height", wh - lth - lbh - bar_t - 250);
 		$('#left-middle').css("min-height", 10);
-        <?php } ?>
-        <?php if($layout == 1) {?>
-        $('#box-item').remove();
+		<?php } ?>;
+		<?php if($layout == 1) {?>;		
+		$('#box-item').remove();
 		$('#box-item #box-item').remove();
-		cat_id=0;
-        <?php } ?>
+		cat_id=0;	
+		<?php } ?>;
     }
     $(window).bind("resize", widthFunctions);
-
+	
     $(document).ready(function () {
-
+		
 		$('#view-customer').click(function(){
-
+			
             $('#myModal').modal({remote: site.base_url + 'customers/view/' + $("input[name=customer]").val()});
             $('#myModal').modal('show');
         });
@@ -2744,77 +2702,77 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             $('#poslist').modal({remote: site.base_url + 'pos/pos_list/' + $("#poswarehouse").val()});
             $('#poslist').modal('show');
         });
-
+		
         <?php if ($sid) { ?>
-        __setItem('positems', JSON.stringify(<?=$items;?>));
+        localStorage.setItem('positems', JSON.stringify(<?=$items;?>)); 
         <?php } ?>
         <?php if($this->session->userdata('remove_posls')) { ?>
-            if (__getItem('positems')) {
-                __removeItem('positems');
-            }
-            if (__getItem('posdiscount')) {
-                __removeItem('posdiscount');
-            }
-            if (__getItem('postax2')) {
-                __removeItem('postax2');
-            }
-            if (__getItem('posshipping')) {
-                __removeItem('posshipping');
-            }
-            if (__getItem('poswarehouse')) {
-                __removeItem('poswarehouse');
-            }
-            if (__getItem('posnote')) {
-                __removeItem('posnote');
-            }
-            if (__getItem('poscustomer')) {
-                __removeItem('poscustomer');
-            }
-            if (__getItem('posbiller')) {
-                __removeItem('posbiller');
-            }
-            if (__getItem('date')) {
-                __removeItem('date');
-            }
-            if (__getItem('poscurrency')) {
-                __removeItem('poscurrency');
-            }
-            if (__getItem('posnote')) {
-                __removeItem('posnote');
-            }
-            if (__getItem('staffnote')) {
-                __removeItem('staffnote');
-            }
+        if (localStorage.getItem('positems')) {
+            localStorage.removeItem('positems');
+        }
+        if (localStorage.getItem('posdiscount')) {
+            localStorage.removeItem('posdiscount');
+        }
+        if (localStorage.getItem('postax2')) {
+            localStorage.removeItem('postax2');
+        }
+        if (localStorage.getItem('posshipping')) {
+            localStorage.removeItem('posshipping');
+        }
+        if (localStorage.getItem('poswarehouse')) {
+            localStorage.removeItem('poswarehouse');
+        }
+        if (localStorage.getItem('posnote')) {
+            localStorage.removeItem('posnote');
+        }
+        if (localStorage.getItem('poscustomer')) {
+            localStorage.removeItem('poscustomer');
+        }
+        if (localStorage.getItem('posbiller')) {
+            localStorage.removeItem('posbiller');
+        }
+		if (localStorage.getItem('date')) {
+            localStorage.removeItem('date');
+        }
+        if (localStorage.getItem('poscurrency')) {
+            localStorage.removeItem('poscurrency');
+        }
+        if (localStorage.getItem('posnote')) {
+            localStorage.removeItem('posnote');
+        }
+        if (localStorage.getItem('staffnote')) {
+            localStorage.removeItem('staffnote');
+        }
         <?php $this->erp->unset_data('remove_posls'); } ?>
         widthFunctions();
         <?php if($suspend_sale) { ?>
-			__setItem('postax2', <?=$suspend_sale->order_tax_id;?>);
-			__setItem('posdiscount', '<?=$suspend_sale->order_discount_id;?>');
-			__setItem('poswarehouse', '<?=$suspend_sale->warehouse_id;?>');
-			__setItem('poscustomer', '<?=($cus_suspend == "" ? $suspend_sale->customer_id : $cus_suspend->customer_id );?>');
-			__setItem('posbiller', '<?=$suspend_sale->biller_id;?>');
+			localStorage.setItem('postax2', <?=$suspend_sale->order_tax_id;?>);
+			localStorage.setItem('posdiscount', '<?=$suspend_sale->order_discount_id;?>');
+			localStorage.setItem('poswarehouse', '<?=$suspend_sale->warehouse_id;?>');
+			localStorage.setItem('poscustomer', '<?=($cus_suspend == "" ? $suspend_sale->customer_id : $cus_suspend->customer_id );?>');
+			localStorage.setItem('posbiller', '<?=$suspend_sale->biller_id;?>');
         <?php } ?>
         <?php if($this->input->get('customer')) { ?>
-			if (!__getItem('positems')) {
-				__setItem('poscustomer', '<?=$this->input->get('customer');?>');
-			} else if (!__getItem('poscustomer')) {
-				__setItem('poscustomer', '<?= $customer->id; ?>');
+			if (!localStorage.getItem('positems')) {
+				localStorage.setItem('poscustomer', '<?=$this->input->get('customer');?>');
+			} else if (!localStorage.getItem('poscustomer')) {
+				localStorage.setItem('poscustomer', '<?= $customer->id; ?>');
 			}
         <?php } else { ?>
-
-			if (!__getItem('poscustomer')) {
-				__setItem('poscustomer', '<?= $customer->id; ?>' );
+			
+			if (!localStorage.getItem('poscustomer')) {
+				localStorage.setItem('poscustomer', '<?= $customer->id; ?>' );
 			}
         <?php } ?>
-        if (!__getItem('postax2')) {
-            __setItem('postax2', '<?=$Settings->default_tax_rate2;?>');
+        if (!localStorage.getItem('postax2')) {
+            localStorage.setItem('postax2', '<?=$Settings->default_tax_rate2;?>');
         }
         $('.select').select2({minimumResultsForSearch: 6});
         var cutomers = [{
             id: '<?= $customer->id; ?>',
-            text: '<?= $customer->company == '-' ? $customer->names : $customer->company; ?>'
+            text: '<?= $customer->company == '-' ? $customer->name : $customer->company; ?>'
         }];
-        $('#poscustomer').val(__getItem('poscustomer')).select2({
+        $('#poscustomer').val(localStorage.getItem('poscustomer')).select2({
             minimumInputLength: 1,
             data: [],
             initSelection: function (element, callback) {
@@ -2846,7 +2804,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 }
             }
         });
-
+		
         if (KB) {
             display_keyboards();
 
@@ -2866,7 +2824,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                                 if (res.results != null) {
                                     $('#poscustomer').select2({data: res}).select2('open');
                                     $('.select2-input').removeClass('select2-active');
-                                    result = true;
+                                    result = true;                                 
                                 } else {
                                     result = false;
                                 }
@@ -2895,12 +2853,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             });
 
         }
-
-		if(posbiller = __getItem('posbiller')){
+		
+		if(posbiller = localStorage.getItem('posbiller')){
 			$("#posbiller").val(posbiller);
 		}
-
-		if(saleman = __getItem('saleman')){
+		
+		if(saleman = localStorage.getItem('saleman')){
 			$('#saleman').val(saleman);
 		}
 
@@ -2918,22 +2876,22 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				}
 			});
 		});
-
+				
 		$('#saleman').change(function(){
 			$('#saleman_1').val($(this).val());
 		});
-
+		
 		$('#delivery_by').change(function(){
 			$('#delivery_by_1').val($(this).val());
 		});
-		if(__getItem('delivery_by')){
+		if(localStorage.getItem('delivery_by')){
 			//$('#delivery_by').val(delivery_by);
 		}
 
 		$('#sale_status').live('change keyup paste', function() {
 			$('#sale_status_1').val($(this).val());
 		}).trigger('change');
-
+		
 		$(document).on('change', '#other_cur_paid', function () {
             $('.other_cur_paid').val($(this).val());
 			$("#amount_1").trigger('change');
@@ -2946,22 +2904,22 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         $('#paymentModal').on('blur', '#amount_<?=$i?>', function (e) {
             $('#amount_val_<?=$i?>').val($(this).val());
         });
-
+		
 		$('#paymentModal').on('change', '#other_cur_paid_<?=$i?>', function (e) {
             $('#other_cur_paid_val_<?=$i?>').val($(this).val());
         });
         $('#paymentModal').on('blur', '#other_cur_paid_<?=$i?>', function (e) {
             $('#other_cur_paid_val_<?=$i?>').val($(this).val());
         });
-
+		
         $('#paymentModal').on('select2-close', '#paid_by_<?=$i?>', function (e) {
             $('#paid_by_val_<?=$i?>').val($(this).val());
-
+			
         });
-
+		
 		$('#paymentModal').on('select2-close', '#bank_account_<?=$i?>', function (e) {
             $('#bank_account_val_<?=$i?>').val($(this).val());
-
+			
         });
         $('#paymentModal').on('change', '#pcc_no_<?=$i?>', function (e) {
             $('#cc_no_val_<?=$i?>').val($(this).val());
@@ -3010,20 +2968,20 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			var Owner = '<?= $Owner?>';
 			var Admin = '<?= $Admin?>';
 			var user_log = '<?= $this->session->userdata('user_id');?>';
-
-			if(__getItem('addre')){
-				//$("#sale_note").attr("value", __getItem('addre'));
+			
+			if(localStorage.getItem('addre')){
+				//$("#sale_note").attr("value", localStorage.getItem('addre'));
 				//var nott = $("#sale_note").val();
-				//__setItem('nott',nott);
+				//localStorage.setItem('nott',nott);
 			}
-
+			
 			if(Owner || Admin || (GP == 1)){
 				<?php if ($sid) { ?>
 				suspend = $('<span></span>');
 				suspend.html('<input type="hidden" name="delete_id" value="<?php echo $sid; ?>" />');
 				suspend.appendTo("#hidesuspend");
 				<?php } ?>
-				var twt = formatDecimal(((total + total_tax) - order_discount) + parseFloat(total_shipping));
+				var twt = formatDecimal(((total + total_tax) - order_discount) + parseFloat(total_shipping)); 
 
 				if (an == 1) {
 					bootbox.alert('<?= lang('x_total'); ?>');
@@ -3033,12 +2991,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 
 
 				<?php if($pos_settings->rounding) { ?>
-
+				
 				round_total = roundNumber(gtotal, <?=$pos_settings->rounding?>);
 				var rounding = formatDecimal(0 - (gtotal - round_total));
 				var total_p = formatMoney(round_total) + ' (' + formatMoney(rounding) + ')';
 				$('#twt').text(total_p);
-
+				
 				$('#quick-payable').text(round_total);
 				$('#payable_amount').val(round_total);
 				<?php } else { ?>
@@ -3055,14 +3013,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					checkboxClass: 'icheckbox_square-blue',
 					radioClass: 'iradio_square-blue',
 					increaseArea: '20%' // optional
-				});
+				});	
 				$("#posbiller").trigger("change");
 				//$('.currencies_payment').focus();
 				$("#date").trigger('change');
 				$("#saleman").trigger('change');
 				$("#delivery_by").trigger('change');
-
-
+				
+				
 				autoCalcurrencies(gtotal);
 			}else{
 				var val = '';
@@ -3071,7 +3029,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					if(value != 0){
 						val = value;
 					}
-
+					
 				});
 				if(val == 0){
 					<?php if ($sid) { ?>
@@ -3106,16 +3064,16 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						radioClass: 'iradio_square-blue',
 						increaseArea: '20%' // optional
 					});
-
+					
 					$("#posbiller").trigger("change");
 					//$('.currencies_payment').focus();
 					$("#date").trigger('change');
 					$("#saleman").trigger('change');
 					$("#delivery_by").trigger('change');
-
+					
 					autoCalcurrencies(gtotal);
 				}else{
-					bootbox.prompt("Please insert password", function(result){
+					bootbox.prompt("Please insert password", function(result){                
 						$.ajax({
 							type: 'get',
 							url: '<?= site_url('auth/checkPassDiscount'); ?>',
@@ -3130,7 +3088,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									suspend.html('<input type="hidden" name="delete_id" value="<?php echo $sid; ?>" />');
 									suspend.appendTo("#hidesuspend");
 									<?php } ?>
-									var twt = formatDecimal((total + invoice_tax) - order_discount);
+									var twt = formatDecimal((total + invoice_tax) - order_discount); 
 									if (an == 1) {
 										bootbox.alert('<?= lang('x_total'); ?>');
 										return false;
@@ -3157,37 +3115,37 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 										radioClass: 'iradio_square-blue',
 										increaseArea: '20%' // optional
 									});
-
+									
 									$("#posbiller").trigger("change");
 									//$('.currencies_payment').focus();
 									$("#date").trigger('change');
 									$("#saleman").trigger('change');
 									$("#delivery_by").trigger('change');
-
+									
 									autoCalcurrencies(gtotal);
 								}else{
 									alert('Incorrect passord');
-								}
+								}		
 							}
 						});
 					});
 				}
 			}
-			$('#pos_note').val(__getItem('address'));
-			//$('#sale_note').text(__getItem('address'));
+			$('#pos_note').val(localStorage.getItem('address'));
+			//$('#sale_note').text(localStorage.getItem('address')); 
 		});
-
-		$("#payment").bind('keypress', function(){
+		
+		$("#payment").bind('keypress', function(){			
 			$('#amount_1').focus();
 		});
-
+		
         function autoCalcurrencies(total_p){
             $(".curr_tpay").each(function(){
                 var rate = $(this).attr('rate');
                 $(this).html((total_p*rate).toFixed(0));
             });
         }
-
+		
 		function autoCalremain(total_p){
             $(".curr_remain").each(function(){
                 var rate = $(this).attr('rate');
@@ -3209,7 +3167,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				}
             });
         }
-
+		
 		function autoCalchange(total_p){
             $(".curr_change").each(function(){
                 var rate = $(this).attr('rate');
@@ -3231,7 +3189,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				}
             });
         }
-
+		
 		function other_curr_paid_2_us(){
 			var total_other_paid = 0;
             $(".currencies_payment").each(function(){
@@ -3241,7 +3199,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					total_other_paid += (paid/rate);
 				}
 			});
-			return total_other_paid;
+			return total_other_paid; 
         }
 //////////////
 		function grandtotalval(cls=""){
@@ -3262,9 +3220,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             var dollar_pi = $('#' + pi);
 			var total_amount = $('#payable_amount').val()-0;
             amt = formatDecimal(amt.split(th).join("")) * 1 + dollar_pi.val() * 1;
-
+			
 			var balance = total_amount - amt;
-
+			
 			if(balance > 0){
 				autoCalremain(balance);
 				autoCalchange(0);
@@ -3282,7 +3240,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				$('#change').text('0.00');
 				$('#remain').text('0.00');
 			}
-
+			
 			//$('#amount_1').val(formatDecimal(amt));
             dollar_pi.val(formatDecimal(amt)).focus();
             var note_count = $quick_cash.find('span');
@@ -3326,7 +3284,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 });
             }
         });
-
+			
         $(document).on('click', '.addButton', function () {
             if (pa <= 5) {
                 $('#paid_by_1, #pcc_type_1, #bank_account_1').select2('destroy');
@@ -3350,13 +3308,13 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             $(this).remove();
             pa--;
         });
-
+       
 		$(".calExchangerate").on('focus', function(){
             var amount = $(this).val();
             var ownRate = $(this).attr('rate');
             calExchangerate(amount, ownRate);
         });
-
+        
 		function calExchangerate(amount, ownRate){
             $(".calExchangerate").each(function(i){
                 var rate = $(this).attr('rate');
@@ -3426,14 +3384,148 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 }else{
 					//$(this).html(formatMoney(0));
 					//$("#other_cur_paid").val('');
-				}
+				}     
             });
             total_paid = total_paying;
             grand_total = gtotal;
             <?php } ?>
         }
 
+
+
         $("#add_item").autocomplete({
+            source: function (request, response) {
+                if (!$('#poscustomer').val()) {
+                    $('#add_item').val('').removeClass('ui-autocomplete-loading');
+                    bootbox.alert('<?=lang('select_above');?>');
+                    //response('');
+                    $('#add_item').focus();
+                    return false;
+                }
+                var test = request.term;
+                if($.isNumeric(test)){
+                    $.ajax({
+                        type: 'get',
+                        url: '<?= site_url('sales/suggests'); ?>',
+                        dataType: "json",
+                        data: {
+                            term: request.term,
+                            warehouse_id: $("#poswarehouse").val(),
+                            customer_id: $("#poscustomer").val()
+                        },
+                        success: function (data) {
+                            response(data);
+
+
+                        }
+                    });
+                }else{
+                    $.ajax({
+                        type: 'get',
+                        url: '<?= site_url('sales/suggestions'); ?>',
+                        dataType: "json",
+                        data: {
+                            term: request.term,
+                            warehouse_id: $("#poswarehouse").val(),
+                            customer_id: $("#poscustomer").val()
+                        },
+                        success: function (data) {
+                            response(data);
+
+                        }
+                    });
+                }
+
+            },
+            minLength: 1,
+            autoFocus: false,
+            delay: 300,
+            response: function (event, ui) {
+
+                if ($(this).val().length >= 16 && ui.content[0].id == 0)
+                {
+                    $(this).val('');
+                }
+                else if (ui.content.length == 1 && ui.content[0].id != 0) {
+                    ui.item = ui.content[0];
+                    $(this).data('ui-autocomplete')._trigger('select', 'autocompleteselect', ui);
+                    $(this).autocomplete('close');
+                }
+                else if (ui.content.length == 1 && ui.content[0].id == 0) {
+
+                    $(this).val('');
+
+                }
+            },
+            select: function (event, ui) {
+                event.preventDefault();
+                //*********add autocomplete prepend item*******//
+                var susp_id = $('#suspend_id').val();
+                var table_no = $('#table_no').val();
+                var item_row = $('#posTable tbody tr').length;
+                wh = $('#poswarehouse').val(),
+                    cu = $('#poscustomer').val();
+                var subtotal = $('#total').html();
+                var code = ui.item.row.code;
+                $.ajax({
+                    type: "get",
+                    url: "<?= site_url('pos/getProductDataByCode') ?>",
+                    data: { code: code, warehouse_id: wh, customer_id: cu, suspend_id: susp_id, item_rows: item_row, sub_total: subtotal},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data !== null) {
+                            var item_id  = data['item_id'];
+                            var image    = "<?php echo site_url();?>assets/uploads/thumbs/"+data['image'];
+                            var title    = data['row']['name'];
+                            var code     = data['row']['code'];
+                            var total    = data['sub_total'];
+                            /* zz */
+
+                            var item ='<button id="'+code+'" type="button" value="'+code+'" title="" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>'+title+'</span></button>';
+
+                            $('#product-sale-view').prepend(item);
+                            /*var suspend_html ='<button id="p' + item_id + ' ' +code+'" type="button" value="'+code+'" title="'+title+' ('+ui.item.row.code+')" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>'+title.substring(0,15)+'...('+formatMoney(ui.item.row.price)+')</span></button>';
+                            $('#product-sale-view').prepend(suspend_html); */
+                        }
+                    }
+                });
+                //*********add autocomplete prepend item********//
+                if (ui.item.id !== 0) {
+                    var product_type = ui.item.row.type;
+                    if (product_type == 'digital') {
+                        $.ajax({
+                            type: 'get',
+                            url: '<?= site_url('sales/getDigitalPro'); ?>',
+                            dataType: "json",
+                            data: {
+                                id: ui.item.item_id
+                            },
+                            success: function (result) {
+                                $.each( result, function(key, value) {
+                                    var row = add_invoice_item(value);
+                                    if (row)
+                                        $(this).val('');
+                                });
+                            }
+                        });
+                        $(this).val('');
+                    } else {
+                        var row = add_invoice_item(ui.item);
+                        if (row)
+                            $(this).val('');
+                    }
+                } else {
+                    //audio_error.play();
+                    //bootbox.alert('<?= lang('no_match_found') ?>');
+                    $('#add_item').focus();
+                    $(this).val('');
+                }
+            }
+
+
+        });
+
+        $("#add_itemsss").autocomplete({
             source: function (request, response) {
                 if (!$('#poscustomer').val()) {
                     $('#add_item').val('').removeClass('ui-autocomplete-loading');
@@ -3454,9 +3546,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							customer_id: $("#poscustomer").val()
 						},
 						success: function (data) {
-							response(data);
-
-
+							response(data);	
+							
+							
 						}
 					});
 				}else{
@@ -3471,7 +3563,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						},
 						success: function (data) {
 							response(data);
-
+							
 						}
 					});
 				}
@@ -3481,9 +3573,13 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             autoFocus: false,
             delay: 300,
             response: function (event, ui) {
-
+            	
                 if ($(this).val().length >= 16 && ui.content[0].id == 0)
 				{
+                    //audio_error.play();
+                    /* bootbox.alert('<?= lang('no_match_found') ?>', function () {
+                        $('#add_item').focus();
+                    });*/
                     $(this).val('');
                 }
                 else if (ui.content.length == 1 && ui.content[0].id != 0) {
@@ -3492,17 +3588,20 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                     $(this).autocomplete('close');
                 }
                 else if (ui.content.length == 1 && ui.content[0].id == 0) {
-
+                    //audio_error.play();
+                    /* bootbox.alert(''no_match_found', function () {
+                        $('#add_item').focus();
+                    }); */
                     $(this).val('');
 
                 }
             },
             select: function (event, ui) {
-                event.preventDefault();
+                event.preventDefault();   
                 //*********add autocomplete prepend item*******//
                 var susp_id = $('#suspend_id').val();
 	            var table_no = $('#table_no').val();
-	            var item_row = $('#posTable tbody tr').length;
+	            var item_row = $('#posTable tbody tr').length;	           				
 	            wh = $('#poswarehouse').val(),
 	            cu = $('#poscustomer').val();
 	            var subtotal = $('#total').html();
@@ -3512,7 +3611,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					url: "<?= site_url('pos/getProductDataByCode') ?>",
 					data: { code: code, warehouse_id: wh, customer_id: cu, suspend_id: susp_id, item_rows: item_row, sub_total: subtotal},
 					dataType: "json",
-					success: function (data) {
+					success: function (data) {						
 						if (data !== null) {
 							var item_id  = data['item_id'];
 							var image    = "<?php echo site_url();?>assets/uploads/thumbs/"+data['image'];
@@ -3520,16 +3619,16 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							var code     = data['row']['code'];
 							var total    = data['sub_total'];
 							/* zz */
-
+							
 							var item ='<button id="'+code+'" type="button" value="'+code+'" title="" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>'+title+'</span></button>';
-
+							
 						$('#product-sale-view').prepend(item);
 							/*var suspend_html ='<button id="p' + item_id + ' ' +code+'" type="button" value="'+code+'" title="'+title+' ('+ui.item.row.code+')" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>'+title.substring(0,15)+'...('+formatMoney(ui.item.row.price)+')</span></button>';
 							$('#product-sale-view').prepend(suspend_html); */
 							}
 						}
 					});
-                //*********add autocomplete prepend item********//
+                //*********add autocomplete prepend item********//  
                 if (ui.item.id !== 0) {
                     var product_type = ui.item.row.type;
 					if (product_type == 'digital') {
@@ -3561,28 +3660,28 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					$(this).val('');
                 }
             }
-
-
+            
+            
         });
-
-
+		
+		
         $(document.body).bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $('#add_item').focus();
             }
         });
-
+		
 
         <?php if($pos_settings->tooltips) { echo '$(".pos-tip").tooltip();'; } ?>
 
         $('#product-list, #suspend-slider, #category-list, #subcategory-list, #suspend-list, .scroll_F').perfectScrollbar({suppressScrollX: true});
         $('select, .select').select2({minimumResultsForSearch: 6});
         $('.rquantity').focusout(function(){
-			
+            alert(2);
         });
-
-
+      
+		
 		$(document).on('click', '.product', function (e) {
             $('#modal-loading').show();
             var susp_id = $('#suspend_id').val();
@@ -3592,7 +3691,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             wh = $('#poswarehouse').val(),
             cu = $('#poscustomer').val();
             var subtotal = $('#total').html();
-
+            
             $.ajax({
                 type: "get",
                 url: "<?= site_url('pos/getProductDataByCode') ?>",
@@ -3610,11 +3709,11 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                         var item_price = data['item_price'];
 						var qty = 0;
 						qty += data['row']['qty'];
-
+						
 						if (data.row.id !== 0) {
 							var product_type = data.row.type;
 							if (product_type == 'digital') {
-
+								
 								$.ajax({
 									type: 'get',
 									url: '<?= site_url('sales/getDigitalPro'); ?>',
@@ -3632,41 +3731,41 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 								});
 								$(this).val('');
 							}else{
-
+								
 								//*******Addition*******//
 								var arr = [];
 								var arr_qty = qty;
-								var condition = true;
+								var condition = true;						
 								$.each($("#product-sale-view button"),function(i,e){
 									arr.push($(this).attr("id"));
-
+									
 								});
-
+														
 								$.each(arr,function(i,e){
 									if(code == e){
 										condition = false;
 										var c_qty = $("#"+e).children("span").find(".qty").text();
 										arr_qty = Number(c_qty)+Number(qty);
 										$("#"+e).children("span").find(".qty").text(arr_qty);
-									}
-                                });
-
+									}							
+								})
+								
 								var item ='<button id="'+code+'" type="button" value="'+code+'" title="'+title+'" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>Qty :<i class="qty">'+(arr_qty)+'</i> ($ '+item_price+') '+title+'</span></button>';
-
+								
 								var suspend_html = '<p> '+ table_no +'</p>';
 									suspend_html += '<div class="sup_number'+susp_id+'">('+(item_row+1)+')</div>';
 									suspend_html += '<br/>'+formatMoney(total);
-								$('.wrap_suspend'+susp_id).html(suspend_html);
+								$('.wrap_suspend'+susp_id).html(suspend_html);						
 								if(condition == true){
 									$('#product-sale-view').prepend(item);
 								}
 								//*******Addition*******//
-
+								
 								add_invoice_item(data);
 							}
 						}
-
-
+						
+						
                         $('#modal-loading').hide();
                     } else {
                         //audio_error.play();
@@ -3678,7 +3777,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         });
 
         $(document).on('click', '.category', function () {
-
+		
             if (cat_id != $(this).val()) {
 				$('#box-item').remove();
 				$('#box-item #box-item').remove();
@@ -3691,7 +3790,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                     data: {category_id: cat_id},
                     dataType: "json",
                     success: function (data) {
-
+						
                         $('#slide_item').hide();
                         var newPrs = $('<div id=box-item ></div>');
                         newPrs.html(data.products);
@@ -3718,7 +3817,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         $('#category-' + cat_id).addClass('active');
 
         $(document).on('click', '.subcategory', function () {
-
+			
             if (sub_cat_id != $(this).val()) {
 				$('#box-item').remove();
 				$('#box-item #box-item').remove();
@@ -3803,17 +3902,17 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 
             }
         });
-
-		$('#print_depre').click(function () {
+				
+		$('#print_depre').click(function () {	
 			PopupPayments();
 		});
-		$('#export_depre').click(function () {
+		$('#export_depre').click(function () {	
 			var customer_id = $('#poscustomer').val();
 			var customer_name = '';
 			var customer_address = '';
 			var customer_tel ='';
 			var customer_mail = '';
-
+			
 			$.ajax({
                     type: "get",
                     url: "<?= site_url('pos/getCustomerInfo'); ?>",
@@ -3856,7 +3955,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									'<th class="td_bor_style"><?= lang('qty') ?></th>'+
 									'<th class="td_bor_botton"><?= lang('amount') ?></th>'+
 								  '</tr>';
-			var type = $('#depreciation_type_1').val();
+			var type = $('#depreciation_type_1').val();	
 			var no = 0;
 			var total_amt = 0;
 			var total_amount = $('#quick-payable').text()-0;
@@ -3869,7 +3968,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			var term_ = formatDecimal($('#depreciation_term_1').val()-0);
 			var counter = 0;
 			var items = $('.edit').length;
-			$('.edit').each(function(){
+			$('.edit').each(function(){	
 				if(counter < items-1){
 					no += 1;
 					var parent = $(this).parent().parent();
@@ -3884,7 +3983,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									'<td class="td_color_light td_align_right" align="right">$ &nbsp;'+ formatMoney(unit_price) +'</td>'+
 									'<td class="td_color_light" align="right">'+ qtt +'</td>'+
 									'<td class="td_color_bottom_light td_align_right" align="right">$ &nbsp;'+ formatMoney(amt) +'</td>'+
-								'</tr>';
+								'</tr>';  
 				}
 				counter += 1;
 			});
@@ -3918,7 +4017,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			myexport+=				'<th width="10%" class="td_bor_style"><?= lang('rate') ?></th>';
 			myexport+=				'<th width="10%" class="td_bor_style"><?= lang('percentage') ?></th>';
 			myexport+=				'<th width="10%" class="td_bor_style"><?= lang('payment') ?></th>'+
-									'<th width="15%" class="td_bor_style"><?= lang('total_payment') ?></th>';
+									'<th width="15%" class="td_bor_style"><?= lang('total_payment') ?></th>';			
 									}else{
 			myexport+=				'<th width="10%" class="td_bor_style"><?= lang('interest') ?></th>'+
 									'<th width="10%" class="td_bor_style"><?= lang('principle') ?></th>'+
@@ -3956,12 +4055,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				}else{
 			myexport+=				'<td class="td_color_light td_align_center" align="right">$ &nbsp;'+ formatMoney(tr.find('.interest').val()-0) +'</td>';
 			myexport+=				'<td class="td_color_light td_align_center" align="right">$ &nbsp;'+ formatMoney(tr.find('.principle').val()-0) +'</td>';
-			myexport+=				'<td class="td_color_light td_align_center" align="right">$ &nbsp;'+ formatMoney(tr.find('.payment_amt').val()-0) +'</td>';
+			myexport+=				'<td class="td_color_light td_align_center" align="right">$ &nbsp;'+ formatMoney(tr.find('.payment_amt').val()-0) +'</td>';									
 				}
 			myexport+=				'<td class="td_color_light td_align_right" align="right">$ &nbsp;'+ balance +'</td>'+
 									'<td class="td_color_bottom_light" style="padding-left:20px;">'+ tr.find('.note').val() +'</td>'+
-								'</tr>';
-			});
+								'</tr>';	
+			});		
 			if(type == 2){
 			myexport+=			'<tr>'+
 									'<td style="text-align:right; padding:5px;"><b> Total </b></td>'+
@@ -3971,7 +4070,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									'<td style="text-align:right; padding:5px;"><b>$ &nbsp;'+ formatMoney(amount_total_pay) +'</b></td>'+
 									'<td style="text-align:right; padding:5px;"> &nbsp; </td>'+
 									'<td style="text-align:right; padding:5px;"> &nbsp; </td>'+
-								'</tr>';
+								'</tr>';								
 			}else{
 			myexport+=			'<tr>'+
 									'<td style="text-align:right; padding:5px; border-top:1px solid black;"><b> Total </b></td>'+
@@ -3996,7 +4095,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			var customer_address = '';
 			var customer_tel ='';
 			var customer_mail = '';
-
+			
 			$.ajax({
                     type: "get",
                     url: "<?= site_url('pos/getCustomerInfo'); ?>",
@@ -4009,16 +4108,45 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						customer_address = obj.address+', '+obj.city+', '+obj.state;
 						customer_tel = obj.phone;
 						customer_mail = obj.email;
+						
+						
+						//alert(customer_name +"|"+customer_address+"|"+customer_tel+"|"+customer_mail);
                     }
                 });
-
+			
 			var mywindow = window.open('', 'erp_pos_print', 'height=auto,max-width=480,min-width=250px');
 			mywindow.document.write('<html><head><title>Print</title>');
 			mywindow.document.write('<link rel="stylesheet" href="<?= $assets ?>styles/helpers/bootstrap.min.css" type="text/css" />');
 			mywindow.document.write('</head><body >');
 			mywindow.document.write('<center>');
 			var issued_date = $('.current_date').val();
-
+			/*mywindow.document.write('<table class="table-condensed" style="width:95%; font-family:Verdana,Geneva,sans-serif; font-size:12px; padding-bottom:10px;">'+
+										'<tr>'+
+											'<td width="15%"><b style="font-size:18px;">Depreciation List</b></td>'+
+											'<td width="35%"></td>'+
+											'<td width="15%"><?= lang('To') ?></td>'+
+											'<td width="35%"><?= lang(": ") ?></td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td><?= lang('Invoice No ') ?></td>'+
+											'<td><?= lang(": ") ?></td>'+
+											'<td><?= lang('Contact Person') ?></td>'+
+											'<td><?= lang(": ") ?></td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td><?= lang('Issued Date ') ?></td>'+
+											'<td><?= lang(": ") ?>'+ issued_date +'</td>'+
+											'<td><?= lang('HP') ?></td>'+
+											'<td><?= lang(": ") ?></td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td></td>'+
+											'<td></td>'+
+											'<td><?= lang('Address') ?></td>'+
+											'<td><?= lang(": ") ?></td>'+
+										'</tr>'+
+									'</table><br/>'
+								  );*/
 
 			mywindow.document.write('<center><h4 style="font-family:Verdana,Geneva,sans-serif;"><?= lang("loan_amortization_schedule") ?></h4></center>');
 			mywindow.document.write('<table class="table-condensed" style="width:95%; font-family:Verdana,Geneva,sans-serif; font-size:12px; padding-bottom:10px;">'+
@@ -4047,7 +4175,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 											  '</tr>'+
 										'</thead>'+
 											'<tbody>');
-											var type = $('#depreciation_type_1').val();
+											var type = $('#depreciation_type_1').val();	
 											var no = 0;
 											var total_amt = 0;
 											var total_amount = $('#quick-payable').text()-0;
@@ -4060,7 +4188,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 											var term_ = Number($('#depreciation_term_1').val()-0);
 											var counter = 0;
 											var items = $('.edit').length;
-											$('.edit').each(function(){
+											$('.edit').each(function(){	
 												if(counter < items-1){
 													no += 1;
 													var parent = $(this).parent().parent();
@@ -4075,7 +4203,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 														'<td class="td_color_light td_align_right">$ '+ formatMoney(unit_price) +'</td>'+
 														'<td class="td_color_light td_align_center">'+ qtt +'</td>'+
 														'<td class="td_color_bottom_light td_align_right">$ '+ formatMoney(amt) +'</td>'+
-													'</tr>');
+													'</tr>');  
 												}
 												counter += 1;
 											});
@@ -4116,7 +4244,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			mywindow.document.write(			'<th width="10%" class="td_bor_style"><?= lang('percentage') ?></th>');
 			mywindow.document.write(			'<th width="10%" class="td_bor_style"><?= lang('payment') ?></th>'+
 												'<th width="15%" class="td_bor_style"><?= lang('total_payment') ?></th>'
-									);
+									);			
 											}else{
 			mywindow.document.write(			'<th width="10%" class="td_bor_style"><?= lang('interest') ?></th>'+
 												'<th width="10%" class="td_bor_style"><?= lang('principle') ?></th>'+
@@ -4127,7 +4255,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 												'<th width="25%" class="td_bor_botton"><?= lang('note') ?></th>'+
 											  '</tr>'+
 										'</thead>'+
-										'<tbody>');
+										'<tbody>');	
 										var k = 0;
 										var total_interest = 0;
 										var total_princ = 0;
@@ -4158,12 +4286,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 											}else{
 			mywindow.document.write(				'<td class="td_color_light td_align_center">$ '+ formatMoney(tr.find('.interest').val()-0) +'</td>');
 			mywindow.document.write(				'<td class="td_color_light td_align_center">$ '+ formatMoney(tr.find('.principle').val()-0) +'</td>');
-			mywindow.document.write(				'<td class="td_color_light td_align_center">$ '+ formatMoney(tr.find('.payment_amt').val()-0) +'</td>');
+			mywindow.document.write(				'<td class="td_color_light td_align_center">$ '+ formatMoney(tr.find('.payment_amt').val()-0) +'</td>');									
 											}
 			mywindow.document.write(				'<td class="td_color_light td_align_right">$ '+ balance +'</td>'+
 													'<td class="td_color_bottom_light">'+ tr.find('.note').val() +'</td>'+
-												'</tr>');
-										});
+												'</tr>');	
+										});		
 										if(type == 2){
 			mywindow.document.write(			'<tr>'+
 													'<td style="text-align:right; padding:5px;" colspan="2"><b> Total </b></td>'+
@@ -4173,7 +4301,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 													'<td style="text-align:left; padding:5px;"><b>$ '+ formatMoney(amount_total_pay) +'</b></td>'+
 													'<td style="text-align:left; padding:5px;"> &nbsp; </td>'+
 													'<td style="text-align:left; padding:5px;"> &nbsp; </td>'+
-												'</tr>');
+												'</tr>');								
 										}else{
 			mywindow.document.write(			'<tr>'+
 													'<td style="text-align:right; padding:5px;"><b> Total </b></td>'+
@@ -4195,7 +4323,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			//mywindow.close();
 			return true;
 		}
-
+		
         $(document).on('click', '.category', function () {
              if (cat_id != $(this).val()) {
 				$('#box-item').remove();
@@ -4220,7 +4348,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                         tcp = data.tcp;
                     }
                 }).done(function () {
-
+				
                     p_page = 'n';
                     $('#category-' + cat_id).addClass('active');
                     $('#category-' + ocat_id).removeClass('active');
@@ -4248,7 +4376,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                         newPrs.appendTo("#item-list");
                     }
                 }).done(function () {
-
+					
                     p_page = 'n';
                     $('#subcategory-' + sub_cat_id).addClass('active');
                     $('#subcategory-' + osub_cat_id).removeClass('active');
@@ -4256,10 +4384,69 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 });
             }
 
+		/*	
+        $('#next').click(function () {
+            if (p_page == 'n') {
+                p_page = 0
+            }
+            p_page = p_page ;
+            if (tcp >= <?php echo $pos_settings->pro_limit; ?> && p_page < tcp) {
+				$('#box-item').remove();
+				$('#box-item #box-item').remove();
+			   $('#modal-loading').show();
+                $.ajax({
+                    type: "get",
+                    url: "<?= site_url('pos/ajaxproducts'); ?>",
+                    data: {category_id: cat_id, subcategory_id: sub_cat_id, per_page: p_page},
+                    dataType: "html",
+                    success: function (data) {
+                        $('#slide_item').hide();
+                        var newPrs = $('<div id=box-item ></div>');
+                        newPrs.html(data);
+                        newPrs.appendTo("#item-list");
+                    }
+                }).done(function () {
+                    $('#modal-loading').hide();
+                });
+            } else {
+                p_page = p_page - <?php echo $pos_settings->pro_limit; ?>;
+            }
+        });
 
+        $('#previous').click(function () {
+            if (p_page == 'n') {
+                p_page = 0;
+            }
+            if (p_page != 0) {
+				$('#box-item').remove();
+				$('#box-item #box-item').remove();
+                $('#modal-loading').show();
+                p_page = p_page - <?php echo $pos_settings->pro_limit; ?>;
+                if (p_page == 0) {
+                    p_page = 'n'
+                }
+                $.ajax({
+                    type: "get",
+                    url: "<?= site_url('pos/ajaxproducts'); ?>",
+                    data: {category_id: cat_id, subcategory_id: sub_cat_id, per_page: p_page},
+                    dataType: "html",
+                    success: function (data) {
+                        $('#slide_item').hide();
+                        var newPrs = $('<div id=box-item ></div>');
+                        newPrs.html(data);
+                        newPrs.appendTo("#item-list");
+                    }
 
+                }).done(function () {
+                    $('#modal-loading').hide();
+                });
+
+            }
+        });
+		*/
+		
 		$('.chk_principle').on('change', function() {
-
+			
 		  if ($(this).is(':checked')) {
 			    $.ajax({
                     type: "get",
@@ -4275,12 +4462,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 });
 			define_depreciation(amount,rate,term,p_type,total_amount);
 		  }else{
-
+	
 		  }
 		});
-
+		
 		function define_depreciation(amount,rate,term,p_type,total_amount){
-
+			
 			tr += '<tr>';
 			tr += '<th class="text-center"> <?= lang("Pmt No."); ?> </th>';
 			tr += '<th class="text-center"> <?= lang("interest"); ?> </th>';
@@ -4290,7 +4477,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			tr += '<th class="text-center"> <?= lang("note"); ?> </th>';
 			tr += '<th class="text-center"> <?= lang("payment_date"); ?> </th>';
 			tr += '</tr>';
-
+			
 			var dateline ='';
 			var principle = 0;
 			var interest = 0;
@@ -4317,7 +4504,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				tr += '<tr> <td class="text-center">'+ k +'<input type="hidden" name="no[]" id="no" class="no" value="'+ k +'" /></td> ';
 				tr += '<td>'+ formatMoney(interest) +'<input type="hidden" name="interest[]" id="interest" class="interest" width="90%" value="'+ formatDecimal(interest) +'"/></td>';
 				tr += '<td>'+ formatMoney(principle) +'<input type="hidden" name="principle[]" id="principle" class="principle" width="90%" value="'+ principle +'"/></td>';
-				tr += '<td>'+ formatMoney(payment) +'<input type="hidden" name="payment_amt[]" id="payment_amt" class="payment_amt" width="90%" value="'+ formatDecimal(payment) +'"/></td>';
+				tr += '<td>'+ formatMoney(payment) +'<input type="hidden" name="payment_amt[]" id="payment_amt" class="payment_amt" width="90%" value="'+ formatDecimal(payment) +'"/></td>';								
 				tr += '<td>'+ formatMoney(balance) +'<input type="hidden" name="balance[]" id="balance" class="balance" width="90%" value="'+ formatDecimal(balance) +'"/></td>';
 				tr += '<td> <input name="note[]" class="note form-control" id="'+i+'" ></input> <input type="hidden" name="note1[]" id="note1" class="note1_'+i+'" width="90%"/></td>';
 				tr += '<td>'+ dateline +'<input type="hidden" class="dateline" name="dateline[]" id="dateline" value="'+ dateline +'" /></td> </tr>';
@@ -4334,7 +4521,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			//$('#tbl_dep1').html(tr);
 			$("#loan1").html(tr);
 		}
-
+		
 		function depreciation(amount,rate,term,p_type,total_amount){
 			var dateline = '';
 			var d = new Date();
@@ -4352,13 +4539,13 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						return false;
 					}else{
 						$('.dep_tbl').hide();
-						alert("Please choose Rate again!");
+						alert("Please choose Rate again!"); 
 						return false;
 					}
 				}else{
 					if(term == '' || term <= 0) {
 						$('.dep_tbl').hide();
-						alert("Please choose Term again!");
+						alert("Please choose Term again!"); 
 						return false;
 					}else{
 						var tr = '';
@@ -4503,7 +4690,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 								tr += '<tr> <td class="text-center">'+ k +'<input type="hidden" name="no[]" id="no" class="no" value="'+ k +'" /></td> ';
 								tr += '<td>'+ formatMoney(interest) +'<input type="hidden" name="interest[]" id="interest" class="interest" width="90%" value="'+ formatDecimal(interest) +'"/></td>';
 								tr += '<td>'+ formatMoney(principle) +'<input type="hidden" name="principle[]" id="principle" class="principle" width="90%" value="'+ principle +'"/></td>';
-								tr += '<td>'+ formatMoney(payment) +'<input type="hidden" name="payment_amt[]" id="payment_amt" class="payment_amt" width="90%" value="'+ formatDecimal(payment) +'"/></td>';
+								tr += '<td>'+ formatMoney(payment) +'<input type="hidden" name="payment_amt[]" id="payment_amt" class="payment_amt" width="90%" value="'+ formatDecimal(payment) +'"/></td>';								
 								tr += '<td>'+ formatMoney(balance) +'<input type="hidden" name="balance[]" id="balance" class="balance" width="90%" value="'+ formatDecimal(balance) +'"/></td>';
 								tr += '<td> <input name="note[]" class="note form-control" id="'+i+'" ></input> <input type="hidden" name="note1[]" id="note1" class="note1_'+i+'" width="90%"/></td>';
 								tr += '<td>'+ dateline +'<input type="hidden" class="dateline" name="dateline[]" id="dateline" value="'+ dateline +'" /></td> </tr>';
@@ -4531,7 +4718,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									dateline = moment(new Date()).add((k-1),'months').format('DD/MM/YYYY');
 								}
 								payment = principle + interest;
-
+								
 								balance -= principle;
 								if(balance <= 0){
 									balance = 0;
@@ -4560,19 +4747,19 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				}
 			}
 		}
-
+		
 		$("#depreciation_rate_1").on('change', function(){
 			$("#loan_rate").val($(this).val());
 		});
-
+		
 		$("#depreciation_type_1").on('change', function(){
 			$("#loan_type").val($(this).val());
 		});
-
+		
 		$("#depreciation_term_1").on('change', function(){
 			$("#loan_term").val($(this).val());
 		});
-
+		
 		$("#suspend_room").on('change', function(){
 			$("#suspend_room1").val($(this).val());
 		});
@@ -4580,10 +4767,10 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 		$("#tbl_dep .note").live('change', function(){
 			var id = ($(this).attr('id'));
 			var value = $(this).val();
-
+			
 			$('.note1_'+id+'').val(value);
 		});
-
+		
 		$(document).on('click','#depreciation_print',function(){
 			var amount = $('#amount_1').val();
 			alert(amount);
@@ -4593,14 +4780,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                     data: {
 						amount: amount
 					},success: function (data) {
-
+						
                     }
 
                 });
-
+			
 		});
-
-		$(document).on('keyup','#amount_1, #amount_2, #amount_3, #amount_4, #amount_5, .currencies_payment', function(){
+				
+		$(document).on('keyup','#amount_1, #amount_2, #amount_3, #amount_4, #amount_5, .currencies_payment', function(){ 
 			//var total_amount = $('#quick-payable').text()-0;
 			var total_amount = $('#payable_amount').val()-0;
 			var us_paid = $('#amount_1').val()-0;
@@ -4642,7 +4829,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			$(".deposit_total_balance").text(deposit_balance);
 
 		});
-
+		
 		$(document).on('change','#depreciation_type_1, #depreciation_rate_1, #depreciation_term_1',function() {
 			var p_type = $('#depreciation_type_1').val();
 			var pr_type = $('#principle_type_1').val();
@@ -4662,8 +4849,8 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				depreciation(loan_amount,rate,term,p_type,total_amount);
 			}
 		});
-
-
+		
+		
 		var datal = 0;
 		$(document).on('change','#principle_type_1',function() {
 			//var p_type = $('#depreciation_type_1').val();
@@ -4680,22 +4867,22 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			var us_down = $('#amount_1').val();
 			var down_pay = kh_2_us + us_down;
 			var amount = total_amount - down_pay;
-
+			
 				//depreciation(loan_amount,rate,term,p_type,total_amount);
 			//alert(pr_type);
 			if(pr_type ) {
-
+				
 				var principle = 0;
 				var interest = 0;
 				var percent = 0;
 				var balance = amount;
-
+				
 				var i=0;
 				var k=1;
-
+				
 				var total_principle = 0;
 				var total_payment = 0;
-
+				
 				$.ajax({
                     type: 'get',
                     url: '<?= site_url('pos/getPrincipleCustomer'); ?>',
@@ -4724,26 +4911,26 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							var yong_yong = c.principle_rate.replace('%', '');
 							//alert(yong_yong);
 							//var rate_amount = ((yong_yong/100)/12);
-
+							
 							var payment = amount *(yong_yong/100); //((amount * rate_amount)*((Math.pow((1+rate_amount),data.length))/(Math.pow((1+rate_amount),data.length)-1)));
-
+							
 									if(c.rates == 1){
 										interest = balance*((yong_yong/100)/12);
 									}else{
 										interest = 0 ;
 									}
 									//dateline = moment(new Date()).add(0,'months').format('DD/MM/YYYY');
-
+									
 									//principle = payment - interest;
 								  var total_pay = interest + payment;
-
+								  
 									//percent = (principle / balance) * 100;
 									//balance -= principle;
 									balance = balance - payment;
 									if(balance <= 0){
 										balance = 0;
 									}
-
+										
 									tr += '<tr> <td class="text-center">'+ c.period +'<input type="hidden" name="no[]" id="no" class="no" value="'+ c.period +'" /></td> ';
 									tr += '<td><input type="text" name="rate[]" id="rate" readonly class="rate2" style="width:60px;" value="'+ formatDecimal(interest) +'"/><input type="hidden" name="interest[]" id="interest" class="interest2" width="90%" value="'+ formatDecimal(interest) +'"/></td>';
 									tr += '<td><input type="text" name="percentage[]" id="percentage" class="percentage2" style="width:60px;" value="'+ yong_yong +'"/><input type="hidden" name="percentage_[]" id="percentage_" class="percentage_2" style="width:60px;" value="'+ yong_yong +'"/></td>';
@@ -4752,7 +4939,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									tr += '<td><input type="text" name="amt_balance[]" id="amt_balance" class="amt_balance2" style="width:60px;" value="'+ formatDecimal(balance) +'" readonly/><input type="hidden" name="balance[]" id="balance" class="balance2" style="width:60px;" value="'+ formatDecimal(balance) +'"/></td>';
 									tr += '<td> <input type="text" style="width:60px;" name="note[]" class="note " id="'+i+'" value="'+c.remark+'"></input> <input type="hidden" name="note1[]" id="note1" class="note1_'+i+'" width="90%"/></td>';
 									tr += '<td><input type="text" class="dateline" name="dateline[]" id="dateline" value="'+ c.dateline +'" size="6" /></td> </tr>';
-
+							
 								total_principle += payment;
 								total_payment += total_pay;
 								k++;
@@ -4762,12 +4949,12 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							tr += '<td><input type="text" name="total_pay" id="total_pay" class="total_pay2" style="width:60px;" value="'+ formatDecimal(total_principle) +'" readonly/></td>';
 							tr += '<td><input type="text" name="total_amount" id="total_amount" class="total_amount2" style="width:60px;" value="'+ formatDecimal(total_payment) +'" readonly/></td>';
 							tr += '<td colspan="3"> &nbsp; </td> </tr>';
-
+							
 							$('.dep_tbl').show();
 						$('#tbl_dep').html(tr);
 						//$('#tbl_dep1').html(tr);
 						$("#loan1").html(tr);
-                    },
+                    }, 
 					error: function (xhr, ajaxOptions, thrownError) {
 						alert(xhr.status);
 						alert(thrownError);
@@ -4776,10 +4963,10 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			}
 		});
 
-
+		
 		//###################### Search Filter #####################//
 		$(document).on('keyup', '#tbl_dep .percentage, #tbl_dep .rate', function () {
-
+			
 			var rate_all = $('#depreciation_rate_1').val()-0;
 			var term = $('#depreciation_term_1').val()-0;
 			var amount = 0;
@@ -4797,7 +4984,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			}else {
 				amount = tr.find('.balance').val()-0;
 				rate = tr.find('.interest').val()-0;
-
+				
 				payment = amount *(per/100);
 				amount_payment = rate + payment;
 				balance = amount - payment;
@@ -4807,14 +4994,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				tr.find('.payment_amt').val(formatDecimal(amount_payment));
 				tr.find('.amt_balance').val(formatDecimal(balance));
 				tr.find('.balance').val(formatDecimal(balance));
-
+				
 				var total_percent = 0;
 				$('#tbl_dep .percentage').each(function(){
 					var parent_ = $(this).parent().parent();
 					var per_tage_ = parent_.find('.percentage').val()-0;
 					total_percent += per_tage_;
 				});
-
+				
 				var j = 1;
 				var i = 1;
 				var balance = 0;
@@ -4841,7 +5028,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					//}else {
 					//	balance = parent.prev().find('.balance').val()-0;
 					//}
-
+					
 					if(rate == 0) {
 						var new_rate = 0;
 					}else {
@@ -4852,10 +5039,10 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					var total_payment = payment + new_rate;
 					amount_total_payment += total_payment;
 					var balance = balance - payment;
-
+					
 					//alert(total_percent +" | "+ amount_percent);
 					//alert(new_rate +" | "+ payment +" | "+ total_payment +" | "+ balance);
-
+					
 					if(total_percent != amount_percent) {
 						parent.find('.rate').val(formatDecimal(new_rate));
 						parent.find('.interest').val(formatDecimal(new_rate));
@@ -4912,7 +5099,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			}else {
 				amount = tr.find('.balance2').val()-0;
 				rate = tr.find('.interest2').val()-0;
-
+				
 				payment = amount *(per/100);
 				amount_payment = rate + payment;
 				balance = amount - payment;
@@ -4922,14 +5109,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				tr.find('.payment_amt2').val(formatDecimal(amount_payment));
 				tr.find('.amt_balance2').val(formatDecimal(balance));
 				tr.find('.balance2').val(formatDecimal(balance));
-
+				
 				var total_percent = 0;
 				$('#tbl_dep .percentage2').each(function(){
 					var parent_ = $(this).parent().parent();
 					var per_tage_ = parent_.find('.percentage2').val()-0;
 					total_percent += per_tage_;
 				});
-
+				
 				var j = 1;
 				var i = 1;
 				var balance = 0;
@@ -4963,17 +5150,17 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					//	loan_amount = parent.prev().find('.balance2').val()-0;
 					//}
 					 new_rate = balance * ((per_tage/100)/12);
-
+					
 					payment = formatDecimal(loan_amount * (per_tage/100));
 					amount_pay += payment;
 					total_payment = payment + new_rate;
 					amount_total_payment += total_payment;
 					balance = balance - payment;
-
+					
 					//alert(total_percent +" | "+ amount_percent);
 					//alert(new_rate +" | "+ payment +" | "+ total_payment +" | "+ balance);
-
-
+					
+					
 					if(total_percent != amount_percent) {
 						parent.find('.rate2').val(formatDecimal(new_rate));
 						parent.find('.interest2').val(formatDecimal(new_rate));
@@ -5006,7 +5193,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						i++;
 					}
 					j++;
-
+					
 				});
 				//$('.total_percen').val(formatDecimal(amount_percent));
 				$('.total_pay2').val(formatDecimal(amount_pay));
@@ -5014,11 +5201,11 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			}
 		});
 		$(document).on('keyup', '#tbl_dep .pmt_principle2', function () {
-
-
+			
+			
 			var amount_payment = 0;
 			var rate = 0;
-
+			
 			var pri = $(this).val()-0;
 			var parent = $(this).parent().parent();
 				var balance = 0;
@@ -5031,14 +5218,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				var perc = 0;
 				var loan_amount = 0;
 				var amount_total_payment = 0;
-
+			
 				var per_tage = parent.find('.percentage2').val()-0;
 					if(per_tage == '' || per_tage == 0) {
 						per_tage = 0;
 					}
 					//amount_percent += per_tage;
 					var rate = parent.find('.rate2').val()-0;
-
+				
 						var total_amount = $('#quick-payable').text()-0;
 						var rate_kh = $('#other_cur_paid').attr('rate')-0;
 						var kh_down = $('#other_cur_paid').val()-0;
@@ -5050,19 +5237,19 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						perc = (loan_amount /100);
 						perc = pri/perc;
 					 new_rate = balance * ((perc/100)/12);
-
+					
 					//payment = formatDecimal(loan_amount * (per_tage/100));
 					total_payment = pri + new_rate;
-
-
-
+					
+					
+					
 					balance = balance - pri;
 
 						parent.find('.rate2').val(formatDecimal(new_rate));
 						parent.find('.interest2').val(formatDecimal(new_rate));
 						parent.find('.percentage2').val(formatDecimal(perc));
 						parent.find('.percentage_2').val(formatDecimal(perc));
-
+						
 						parent.find('.total_payment2').val(formatDecimal(total_payment));
 						parent.find('.payment_amt2').val(formatDecimal(total_payment));
 						parent.find('.amt_balance2').val(formatDecimal(balance));
@@ -5070,13 +5257,13 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					$('#tbl_dep .percentage2').each(function(){
 						var p = $(this).parent().parent();
 						amount_pay += p.find('.pmt_principle2').val()-0;
-                        amount_total_payment += p.find('.total_payment2').val() - 0;
-                    });
-
+						amount_total_payment += p.find('.total_payment2').val()-0;;
+					});
+				
 				//$('.total_percen').val(formatDecimal(amount_percent));
 				$('.total_pay2').val(formatDecimal(amount_pay));
 				$('.total_amount2').val(formatDecimal(amount_total_payment));
-
+			
 		});
 		//######################## Code Search #############################//
 		$("#Pcode").autocomplete({
@@ -5184,20 +5371,20 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pcode').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		$(document).on("click", ".passimage", function () {
 			var img = $(this).attr('alt');
 			var image = '<img src="http://192.168.1.168:8181/CloudNET/iCloudERP_ACC/assets/uploads/'+img+'" style="width:100%;"/>';
 			$('.getImg').html(image);
 		});
-
+		
 		//######################## Name Search #############################//
 		$("#Pname").autocomplete({
 			search: function(event, ui) {
@@ -5309,14 +5496,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pname').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		//######################## Description Search #############################//
 		$("#Pdescription").autocomplete({
 			search: function(event, ui) {
@@ -5430,14 +5617,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pdescription').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		//######################## Category Search #############################//
 		$("#Pcategory").autocomplete({
 			search: function(event, ui) {
@@ -5460,8 +5647,8 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                     dataType: "json",
                     data: {
 						code: coding,
-						named: nameing,
-						price: price,
+						named: nameing, 
+						price: price, 
                         term: request.term,
                         warehouse_id: $("#poswarehouse").val(),
                         customer_id: $("#poscustomer").val()
@@ -5502,7 +5689,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 event.preventDefault();
                 if (ui.item.id !== 0) {
                     var row = add_invoice_item(ui.item);
-
+                    
                     if (row)
                         $(this).val('');
                 } else {
@@ -5550,14 +5737,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pcategory').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		//######################## Price Search #############################//
 		$("#Pprice").autocomplete({
 			search: function(event, ui) {
@@ -5622,9 +5809,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 event.preventDefault();
                 if (ui.item.id !== 0) {
                     var row = add_invoice_item(ui.item);
-
+                    
                     $('#product-sale-view').html("sdfsfd");
-
+                    
                     if (row)
                         $(this).val('');
                 } else {
@@ -5672,14 +5859,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pprice').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		//######################## Strap Search #############################//
 		$("#Pstrap").autocomplete({
 			search: function(event, ui) {
@@ -5692,7 +5879,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                     $('#Pstrap').focus();
                     return false;
                 }
-
+				
                 $.ajax({
                     type: 'get',
                     url: '<?= site_url('sales/Pstrap'); ?>',
@@ -5730,9 +5917,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 event.preventDefault();
                 if (ui.item.id !== 0) {
                     var row = add_invoice_item(ui.item);
-
+                    
                     $('#product-sale-view').html("sdfsfd");
-
+                    
                     if (row)
                         $(this).val('');
                 } else {
@@ -5776,22 +5963,22 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.test'));
 		};
-
+		
 		$('#Pstrap').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
-
+		
+		
 		$('#Pcode').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		//#################### Search Floor #######################//
 		function floor_status(x){
 			var lang = {'0': '<?=lang('free');?>', '2': '<?=lang('book');?>', '1': '<?=lang('busy');?>'};
@@ -5873,7 +6060,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									item.code + '<input type="hidden" value="'+ item.code +'" id="code'+item.item_id+'"/>' +
 								'</td>' +
 								'<td style="width:142px;">'+
-									item.label +
+									item.label + 
 								'</td>' +
 								'<td style="width:142px;">'+
 									floor_status(item.status) + '<input type="hidden" value="'+ item.status +'" id="status'+item.item_id+'"/>' +
@@ -5886,14 +6073,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.floor'));
 		};
-
+		
 		$('#fcode').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		$("#fdescription").autocomplete({
 			search: function(event, ui) {
 				$('.floor').empty();
@@ -5964,7 +6151,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									item.code + '<input type="hidden" value="'+ item.code +'" id="code'+item.item_id+'"/>' +
 								'</td>' +
 								'<td style="width:142px;">'+
-									item.label +
+									item.label + 
 								'</td>' +
 								'<td style="width:142px;">'+
 									floor_status(item.status) + '<input type="hidden" value="'+ item.status +'" id="status'+item.item_id+'"/>' +
@@ -5977,14 +6164,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.floor'));
 		};
-
+		
 		$('#fdescription').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
         });
-
+		
 		$("#ffloor").autocomplete({
 			search: function(event, ui) {
 				$('.floor').empty();
@@ -6055,7 +6242,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 									item.code + '<input type="hidden" value="'+ item.code +'" id="code'+item.item_id+'"/>' +
 								'</td>' +
 								'<td style="width:142px;">'+
-									item.label +
+									item.label + 
 								'</td>' +
 								'<td style="width:142px;">'+
 									floor_status(item.status) + '<input type="hidden" value="'+ item.status +'" id="status'+item.item_id+'"/>' +
@@ -6068,16 +6255,16 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				.append(inner_html)
 				.appendTo($('.floor'));
 		};
-
+		
 		$('#ffloor').bind('keypress', function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
                 $(this).autocomplete("search");
             }
-        });
-
+        });		
+		
 		$(document).on('click', '#addItem', function (e) {
-
+			
 			$('#modal-loading').show();
             var susp_id = $('#suspend_id').val();
             var table_no = $('#table_no').val();
@@ -6105,8 +6292,8 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							var item ='<button id="'+code+'" type="button" value="'+code+'" title="" class="btn-prni btn-default product pos-tip" data-container="body" data-original-title="'+title+'"><img src="'+image+'" alt="'+title+'" style="width: 60px; height: 60px;" class="img-rounded"/><span>'+title+'</span></button>';
 							var suspend_html = '<p> '+ table_no +'</p>';
 								suspend_html += '<div class="sup_number'+susp_id+'">('+(item_row+1)+')</div>';
-								suspend_html += '<br/>'+formatMoney(total);
-							$('.wrap_suspend'+susp_id).html(suspend_html);
+								suspend_html += '<br/>'+formatMoney(total);							
+							$('.wrap_suspend'+susp_id).html(suspend_html);							
 							$('#product-sale-view').prepend(item);
 							add_invoice_item(data);
 							$('#modal-loading').hide();
@@ -6119,9 +6306,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				});
 			});
 		});
-
+		
 		$(document).on('click', '#addSearch', function (e) {
-
+			
 			$('#modal-loading').show();
             var susp_id = $('#suspend_id').val();
             var table_no = $('#table_no').val();
@@ -6151,7 +6338,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							}else{
 								$.each(data, function(i, items) {
 									e.preventDefault();
-
+								
 									var item_id = items['item_id'];
 									var image = "<?php echo site_url();?>assets/uploads/thumbs/"+items['image'];
 									var title = items['row']['name'];
@@ -6200,14 +6387,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				tr.find('.payment_amt').val(amount_payment);
 				tr.find('.amt_balance').val(formatDecimal(balance));
 				tr.find('.balance').val(balance);
-
+				
 				var total_pay = 0;
 				$('#tbl_dep .pmt_principle').each(function(){
 					var parent = $(this).parent().parent();
 					var pay_amt_ = parent.find('.pmt_principle').val()-0;
 					total_pay += pay_amt_;
 				});
-
+				
 				var j = 1;
 				var i = 1;
 				var balance = 0;
@@ -6245,7 +6432,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					var total_payment = pay_amt + new_rate;
 					amount_total_payment += total_payment;
 					var balance = balance - pay_amt;
-
+					
 					//alert(new_rate);
 					if(total_pay != amount_pay) {
 						parent.find('.rate').val(formatDecimal(new_rate));
@@ -6285,7 +6472,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				$('.total_amount').val(formatDecimal(amount_total_payment));
 			}
 		});
-
+		
 		function checkDeposit() {
 			var customer_id = $("#poscustomer").val();
 
@@ -6307,14 +6494,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 							amount1 = $("#amount_1").val() - 0;
 							amount2 = $("#amount_2").val() ? $("#amount_2").val()-0 : 0;
 							amount  = amount1 + amount2;
-
+							
                             $('#dp_details_1').html('<small>Customer Name: ' + data.name + '<br>Amount: <span class="deposit_total_amount">' + (data.deposit_amount == null ? 0 : data.deposit_amount) + '</span> - Balance: <span class="deposit_total_balance">' +(data.deposit_amount - amount) + '</span></small>');
-
+							
 							amount2 = $("#amount_2").val();
 							if(amount2){
 								$('#dp_details_2').html('<small>Customer Name: ' + data.name + '<br>Amount: <span class="deposit_total_amount">' + (data.deposit_amount == null ? 0 : data.deposit_amount) + '</span> - Balance: <span class="deposit_total_balance">' +(data.deposit_amount - amount) + '</span></small>');
 							}
-
+							
 							$('#deposit_no_1').parent('.form-group').removeClass('has-error');
                             //calculateTotals();
                             //$('#amount_1').val(data.deposit_amount - amount).focus();
@@ -6323,7 +6510,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 });
             }
 		}
-
+		
         $(document).on('change', '.paid_by', function () {
             var p_val = $(this).val(),
                 id = $(this).attr('id'),
@@ -6384,7 +6571,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 				$('.dp_' + pa_no).show();
                 $('.ngc_' + pa_no).hide();
 				checkDeposit();
-			}else{
+			}else{	
 				$('.ngc_' + pa_no).show();
                 $('.dp_' + pa_no).hide();
                 $('#dp_details_' + pa_no).html('');
@@ -6394,73 +6581,73 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         $(document).on('click', '#submit-sale', function () {
 			var balance = parseFloat($("#balance").text());
 			var other_balance = parseFloat($(".curr_balance").text());
-
+			
 			var amount_txt = $("#amount_1").val();
 			var other_amount_txt = $("#other_cur_paid").val();
-
+			
 			var cur_pay = $(".curr_tpay").text();
 
 			var deposit_amount = parseFloat($(".deposit_total_amount").text());
 			var deposit_balance = parseFloat($(".deposit_total_balance").text());
 			deposit_balance = (deposit_amount - Math.abs(amount_txt));
-
+			
 			if(deposit_balance > deposit_amount || deposit_balance < 0 || deposit_amount == 0){
 				bootbox.alert('Your Deposit Limited: ' + deposit_amount);
 				$('#amount_1').val(deposit_amount);
 				$(".deposit_total_balance").text(deposit_amount - $('#amount_1').val()-0);
 				return false;
 			}
-
-			var arr_push=[];
-			$('.sprice').each(function (i) {
-				var price = $(this).text();
+			
+			var arr_push=[];		
+			$('.sprice').each(function (i) { 
+				var price = $(this).text();    
 				arr_push.push(price);
-
-			});
+				 
+			}); 
 			var i = 0;
-			var chks = false;
-			$('.cost').each(function (i){
-				var cost = $(this).val();
+			var chks = false; 
+			$('.cost').each(function (i){ 
+				var cost = $(this).val();  
 				if(arr_push[i] >= cost){
 					  chks=false;
-
+				  
 				}else{
 					chks=true;
 					return false;
-				}
-
-			});
+				} 
+				 
+			}); 
 			var pname = $('.rname').val();
 
 			if(chks == true){
 				bootbox.confirm('Product <strong>' + pname + '</strong> its <i>Price</i> is less than or equal to <i>Cost</i>, <br>So do you want to sell it?', function (res) {
 					if (res == true) {
-						$('#pos_note').val(__getItem('posnote'));
-						$('#staff_note').val(__getItem('staffnote'));
-						$('#suspend_room').val(__getItem('suspendroom'));
-						$('#pos_date').val(__getItem('date'));
+						$('#pos_note').val(localStorage.getItem('posnote'));
+						$('#staff_note').val(localStorage.getItem('staffnote'));
+						$('#suspend_room').val(localStorage.getItem('suspendroom'));
+						$('#pos_date').val(localStorage.getItem('date'));
 						$('#submit-sale').text('<?=lang('loading');?>').attr('disabled', true);
 						$('#pos-sale-form').submit();
 					}
 				});
 				return false;
 			}else{
-				$('#pos_note').val(__getItem('posnote'));
-				$('#staff_note').val(__getItem('staffnote'));
-				$('#suspend_room').val(__getItem('suspendroom'));
-				$('#pos_date').val(__getItem('date'));
+				$('#pos_note').val(localStorage.getItem('posnote'));
+				$('#staff_note').val(localStorage.getItem('staffnote'));
+				$('#suspend_room').val(localStorage.getItem('suspendroom'));
+				$('#pos_date').val(localStorage.getItem('date'));
 				$('#submit-sale').text('<?=lang('loading');?>').attr('disabled', true);
 				$('#pos-sale-form').submit();
 			}
-
+			
 			if(balance < 0 && other_balance < 0 || (amount_txt == 0 && other_amount_txt ==0)){
 				<?php if ($pos_settings->payment_balance == 1) {?>
 				bootbox.confirm("<?= lang('paid_l_t_payable'); ?>", function (res) {
 					if (res == true) {
-						$('#pos_note').val(__getItem('posnote'));
-						$('#staff_note').val(__getItem('staffnote'));
-						$('#suspend_room').val(__getItem('suspendroom'));
-						$('#pos_date').val(__getItem('date'));
+						$('#pos_note').val(localStorage.getItem('posnote'));
+						$('#staff_note').val(localStorage.getItem('staffnote'));
+						$('#suspend_room').val(localStorage.getItem('suspendroom'));
+						$('#pos_date').val(localStorage.getItem('date'));
 						$('#submit-sale').text('<?=lang('loading');?>').attr('disabled', true);
 						$('#pos-sale-form').submit();
 					}
@@ -6471,15 +6658,15 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					return false;
 				<?php } ?>
 			}else{
-				$('#pos_note').val(__getItem('posnote'));
-				$('#staff_note').val(__getItem('staffnote'));
-				$('#suspend_room').val(__getItem('suspendroom'));
-				$('#pos_date').val(__getItem('date'));
+				$('#pos_note').val(localStorage.getItem('posnote'));
+				$('#staff_note').val(localStorage.getItem('staffnote'));
+				$('#suspend_room').val(localStorage.getItem('suspendroom'));
+				$('#pos_date').val(localStorage.getItem('date'));
 				$(this).text('<?=lang('loading');?>').attr('disabled', true);
 				$('#pos-sale-form').submit();
 			}
         });
-
+        
 		$('.sus_sale').on('click', function (e) {
             var sid = $(this).attr("id");
             if (count > 1) {
@@ -6495,7 +6682,7 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
             }
             return false;
         });
-
+		
 		$('.combine_table').on('click', function(e){
 			var joined = [];
 			$('.chsuspend:checked').each(function(e) {
@@ -6505,22 +6692,21 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			joined = joined.join('_');
 			window.location.href = "<?= site_url('pos/index') ?>/0/0/" + joined;
 		});
-
+              
         $('.clear_suspend').on('click', function (e) {
-			var hrefs = $(this).attr("hrefs");
+			var hrefs = $(this).attr("hrefs");        
 			bootbox.confirm("<?= $this->lang->line('leave_alert') ?>", function (gotit) {
 				if (gotit == true) {
 					window.location.href = hrefs;
-				}
+				} 
 			});
             return false;
         });
-
+        
 		$('.suspend-button').dblclick(function () {
-
             ref = $(this).val();
 			nref = $(this).attr('id');
-
+			
             if (!ref || ref == '') {
                 bootbox.alert('<?= lang('type_reference_note'); ?>');
                 return false;
@@ -6531,14 +6717,14 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
                 <?php } else { ?>
                 suspend.html('<input type="hidden" name="suspend" value="yes" /><input type="hidden" name="suspend_id" value="' + ref + '" /><input type="hidden" name="suspend_name" value="' + nref + '" />');
                 <?php } ?>
-
+				
                 suspend.appendTo("#hidesuspend");
                 $('#total_items').val(count - 1);
                $('#pos-sale-form').submit();
-
+				
             }
         });
-
+		
 		$("#date").datetimepicker({
 			format: 'yyyy-mm-dd h:i:ss',
 			fontAwesome: true,
@@ -6550,24 +6736,24 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			startView: 2,
 			forceParse: 0
 		}).datetimepicker('update', new Date()).trigger('change');
-
+		
 		$("#date").live('change keyup paste', function(){
 			$(".date_c").val($(this).val());
 		});
-
+		
 		$('.dateline').datetimepicker({
-			format: site.dateFormats.js_sdate,
-			fontAwesome: true,
-			language: 'erp',
-			todayBtn: 1,
-			autoclose: 1,
-			minView: 2
+			format: site.dateFormats.js_sdate, 
+			fontAwesome: true, 
+			language: 'erp', 
+			todayBtn: 1, 
+			autoclose: 1, 
+			minView: 2 
 		});
-
+		
 		$(document).on('focus','.dateline', function(t) {
 			$(this).datetimepicker({format: site.dateFormats.js_sdate, fontAwesome: true, todayBtn: 1, autoclose: 1, minView: 2 });
 		});
-
+		
 	});
 
     <?php if($pos_settings->java_applet) { ?>
@@ -6593,18 +6779,18 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
     });
     <?php } else { ?>
     $(document).ready(function () {
-
+		
 		$('#print_order_drink').click(function () {
-
+			
 			 Popup($('#order_tbl_drink').html());
 			 var item_id = Array();
 			 var susp_id = $("#suspend_id").val();
 			 $(".order_print_drink").each(function(i){
 					item_id[i] = $(this).attr('itemcode');
 			 });
-
+			
 			$.ajax({
-					type: "get",
+					type: "get", 
 					async: false,
 					data: {'update_printed':1,suspend_id: susp_id,item_id:item_id},
 					url: site.base_url + "pos/updated_print/",
@@ -6613,23 +6799,23 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 						// Popup($('#order_tbl_drink').html());
 					}
 			});
-
+			
 			$('#print_order_drink').css('pointer-events','none');
-
+			
         });
-
+		
 		$('#print_order_food').click(function () {
-
+			 
 			 Popup($('#order_tbl_food').html());
-
+			 
 			 var item_id = Array();
 			 var susp_id = $("#suspend_id").val();
 			 $(".order_print_food").each(function(i){
 					item_id[i] = $(this).attr('itemcode');
 			 });
-
+			
 			$.ajax({
-					type: "get",
+					type: "get", 
 					async: false,
 					data: {'update_printed':1,suspend_id: susp_id,item_id:item_id},
 					url: site.base_url + "pos/updated_print/",
@@ -6639,9 +6825,9 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 					}
 			});
 			$('#print_order_food').css('pointer-events','none');
-
+           
         });
-
+		
         $('#print_order').click(function () {
             Popup($('#order_tbl').html());
         });
@@ -6654,11 +6840,11 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 		$('#print_bills').click(function () {
             Popup($('#bill_tbl').html());
         });
-
-
+		
+		
     });
-
-
+	
+	
     <?php } ?>
     $(function () {
         $(".alert").effect("shake");
@@ -6675,10 +6861,8 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
         <?php } ?>
     });
     <?php if(!$pos_settings->java_applet) { ?>
-
-
     function Popup(data) {
-
+		
 		var cssPrint = '' +
         '<style type="text/css">' +
 		'@media print {' +
@@ -6705,24 +6889,28 @@ var lang = {unexpected_value: '<?=lang('unexpected_value');?>', select_above: '<
 			'	img {display:block;}'+
 			'}' +
 		'</style>';
-
+		
         var mywindow = window.open('', 'erp_pos_print', 'height=800,width=450');
-
+		
 					mywindow.document.write('<html><head><title>Print</title>');
 					//mywindow.document.write('<link rel="stylesheet" href="<?= $assets ?>styles/helpers/bootstrap.min.css"/>');
 					mywindow.document.write(cssPrint);
 					mywindow.document.write('</head>');
-					mywindow.document.write('<div style="text-align:center"><img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>" /> </div>');
-
+					mywindow.document.write('<div style="text-align:center"><img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>" /> ');
+					mywindow.document.write('<?php
+						echo '<p style="text-align:center">' . $biller->address . " " . $biller->city . " " . $biller->postal_code . " " . $biller->state . " " . $biller->country .
+							"<br><b>" . lang("tel") . ": " . $biller->phone . "</b></p></div>"; 
+						?>');
+					
 					baz = document.getElementById('b-footer').value;
-
+					
 					mywindow.document.write(data);
-
+					
 					mywindow.document.write('<hr>');
 					mywindow.document.write('<div class="well well-sm" style="text-align:center">'+nl2br(baz)+'</div>');
 					mywindow.document.write('</html>');
 					mywindow.print();
-
+					
         mywindow.close();
         return true;
     }
@@ -6774,7 +6962,7 @@ $s2_file_date = $this->parser->parse_string($s2_lang_file, $s2_data, true);
 <?php } ?>
 <script>
 $(document).ready(function(){
-
+	
 	$("#slref").attr('readonly','readonly');
 	$('#ref_st').on('ifChanged', function() {
 	  if ($(this).is(':checked')) {
@@ -6785,46 +6973,46 @@ $(document).ready(function(){
 		var temp = $("#temp_reference_no").val();
 		$("#slref").val(temp);
 		$("#reference_nob").val(temp);
-
+		
 	  }
 	});
-
+	
 	$('#slref').change(function(){
 		$('#reference_nob').val($(this).val());
 	});
-
-
+	
+	
     $(".grid-view-btn").click(function(){
         //$(".grid-view").slideToggle();
     });
-
+	
     // prevent default action upon enter // rothana
 	$('body').bind('keypress', function (e) {
 		var payable = $("#quick-payable").text();
 		var amount_1 = $("#amount_1").val();
         if(amount_1 == 0){
-		    if (e.keyCode == 13) {
+		    if (e.keyCode == 13) {	            
 		        $("#amount_1").val(payable);
                 $("#amount_1").focus();
 	            $(".currencies_payment").focus();
 		    }
         }else if(amount_1 != 0)
         {
-           if (e.keyCode == 13) {
+           if (e.keyCode == 13) {		   
            		//$("#amount_1").val(payable);
-
+				
 					var balance = parseFloat($("#balance").text());
 					var other_balance = parseFloat($(".curr_balance").text());
-
+					
 					if(balance < 0 && other_balance < 0){
-
+						
 						<?php if ($pos_settings->payment_balance == 1) { ?>
-
+						
 						bootbox.confirm("<?= lang('paid_l_t_payable'); ?>", function (res) {
 							if (res == true) {
-								$('#pos_note').val(__getItem('posnote'));
-								$('#staff_note').val(__getItem('staffnote'));
-								$('#suspend_room').val(__getItem('suspendroom'));
+								$('#pos_note').val(localStorage.getItem('posnote'));
+								$('#staff_note').val(localStorage.getItem('staffnote'));
+								$('#suspend_room').val(localStorage.getItem('suspendroom'));
 								$('#submit-sale').text('<?=lang('loading');?>').attr('disabled', true);
 								$('#pos-sale-form').submit();
 							}else{
@@ -6844,43 +7032,43 @@ $(document).ready(function(){
 		   }
         }
 	});
-
+	
 		var exist_slider= $('#check-slider-exist').text();
 		if(exist_slider==1 || exist_slider==5){
 			var checkmouse=0;
-
-
-
-
+	
+		
+		
+		
 		var checkmove = $(document).mousemove(function() {
 		  checkmouse=0;
 		  $('.test-mouse').html(checkmouse);
 		});
 		setInterval(function () {
 			checkmouse=1;
-			},1000);
-
+			},1000); 
+		
 		setInterval(function () {
 			if(checkmouse==1){
 						$('#category-' + ocat_id).removeClass('active');
 						$('#box-item').remove();
 						$('#box-item #box-item').remove();
 						$('#slide_item').show();
-						cat_id=0;
+						cat_id=0;			
 						if(exist_slider==5) {
 							$('.btn_gift_card').hide();
 						}
 			}
-			},60000);
+			},60000); 
 		}
-
+	
 	});
 
 
 </script>
 <script type="text/javascript">
 $(document).ready(function(){
-	
+
 	// Ctrl + S = Save in Payment
     $(window).keypress(function(event) {
         if (!(event.which == 115 && event.ctrlKey) && !(event.which == 19)) return true;
@@ -6888,11 +7076,11 @@ $(document).ready(function(){
         event.preventDefault();
         return false;
     });
-
+	
 	$('body').on('change', '#addr,#addr1,#addr2,#addr3,#addr4,#addr5', function(e) {
 		  e.preventDefault();
 		  var addr = $(this).val();
-			__setItem('addre',addr);
+			localStorage.setItem('addre',addr);		
 	});
 
     $('#submit-sale').click(function() {

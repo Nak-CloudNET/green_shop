@@ -417,6 +417,7 @@ class Pos extends MY_Controller
 		$this->form_validation->set_rules('date', $this->lang->line("date"));
         $this->form_validation->set_rules('biller', $this->lang->line("biller"), 'required');        
         $this->form_validation->set_rules('reference_nob', lang("reference_no"), 'required|is_unique[sales.reference_no]');
+
         if ($this->form_validation->run() == true){
             $quantity 			= "quantity";
             $product 			= "product";

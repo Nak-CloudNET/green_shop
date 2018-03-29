@@ -58,12 +58,6 @@
 			var select = "<select class='form-control currency-code' name='currency"+n[0]+"'>" + opt + '</select>';
 			return '<div class="text-center">' + select + '</div>';
 		}
-		
-		function colUnit(x){
-			var unit = x.split('___');
-			var select = unit[2] + '<input type = "hidden" name="unit_id'+unit[0]+'" value="'+ unit[1] +'" ><input type = "hidden" name="unit_type'+unit[0]+'" value="'+ unit[3] +'" />';
-			return '<div class="text-center">' + select + '</div>';
-		}
 
         $('#CGData').dataTable({
             "aaSorting": [[1, "asc"]],
@@ -84,7 +78,7 @@
                 nRow.className = "product_group_price_id";
                 return nRow;
             },
-            "aoColumns": [{"bSortable": false, "mRender": checkbox}, null, null, {"bSearchable": false, "mRender": colUnit}, {"bSearchable": false, "mRender": setCurrencies}, {"bSearchable": false, "bSortable": false, "mRender": price_input}, {"bSortable": false}]
+            "aoColumns": [{"bSortable": false, "mRender": checkbox}, null, null, {"mRender": setCurrencies}, {"bSortable": false, "mRender": price_input}, {"bSortable": false}]
         }).fnSetFilteringDelay();
 		
 		$(".currency").select2();
@@ -148,7 +142,6 @@
 								</th>
 								<th class="col-xs-3"><?= lang("product_code"); ?></th>
 								<th class="col-xs-4"><?= lang("product_name"); ?></th>
-								<th class="col-xs-1"><?= lang("unit"); ?></th>
 								<th class="col-xs-4"><?= lang("currency"); ?></th>
 								<th><?= lang("price"); ?></th>
 								<th style="width:85px;"><?= lang("update"); ?></th>
@@ -156,7 +149,7 @@
                         </thead>
                         <tbody>
 							<tr>
-								<td colspan="6" class="dataTables_empty"><?= lang('loading_data_from_server') ?></td>
+								<td colspan="5" class="dataTables_empty"><?= lang('loading_data_from_server') ?></td>
 							</tr>
 						</tbody>
                     </table>

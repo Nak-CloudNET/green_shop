@@ -1141,23 +1141,26 @@ class Settings_model extends CI_Model
         return FALSE;
     }
 
-    public function setProductPriceForPriceGroup($product_id, $group_id, $price, $currency_code = NULL)
+
+
+    public function setProductPriceForPriceGroup($product_id, $group_id, $price, $currency_code = NULL, $unit_id = NULL, $unit_type = NULL)
     {
-        if ($this->getGroupPrice($group_id, $product_id)) {
-            if ($this->db->update('product_prices', array('price' => $price, 'currency_code' => $currency_code), array('price_group_id' => $group_id, 'product_id' => $product_id))) {
+        //$this->erp->print_arrays($product_id,"__group_id",$group_id,"__price",$price,"__unitcode",$currency_code,"___unitid",$unit_id,"___unittype",$unit_type);
+        if ($this->getGroupPrice($group_id, $product_id, $unit_id, $unit_type)) {
+            if ($this->db->update('product_prices', array('price' => $price, 'currency_code' => $currency_code), array('price_group_id' => $group_id, 'product_id' => $product_id, 'unit_id' => $unit_id, 'unit_type' => $unit_type))) {
                 return true;
             }
         } else {
-            if ($this->db->insert('product_prices', array('price' => $price, 'price_group_id' => $group_id, 'product_id' => $product_id, 'currency_code' => $currency_code))) {
+            if ($this->db->insert('product_prices', array('price' => $price, 'price_group_id' => $group_id, 'product_id' => $product_id, 'unit_id' => $unit_id, 'unit_type' => $unit_type, 'currency_code' => $currency_code))) {
                 return true;
             }
         }
         return FALSE;
     }
 
-    public function getGroupPrice($group_id, $product_id)
+    public function getGroupPrice($group_id, $product_id, $unit_id = NULL, $unit_type = NULL)
     {
-        $q = $this->db->get_where('product_prices', array('price_group_id' => $group_id, 'product_id' => $product_id), 1);
+        $q = $this->db->get_where('product_prices', array('price_group_id' => $group_id, 'product_id' => $product_id, 'unit_id' => $unit_id, 'unit_type' => $unit_type), 1);
         if ($q->num_rows() > 0) {
             return $q->row();
         }
