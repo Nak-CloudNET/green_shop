@@ -454,6 +454,7 @@ class Pos extends MY_Controller
             $order_discount 	= 0;
             $percentage 		= '%';
             $g_total_txt1 		= 0;
+
 			$total_discount 	= 0;
 			$totalcost 			= 0;
             $i = isset($_POST['product_code']) ? sizeof($_POST['product_code']) : 0;
@@ -474,10 +475,9 @@ class Pos extends MY_Controller
                 $item_serial = isset($_POST['serial'][$r]) ? $_POST['serial'][$r] : '';
                 $item_tax_rate = isset($_POST['product_tax'][$r]) ? $_POST['product_tax'][$r] : NULL;
                 $item_discount = isset($_POST['product_discount'][$r]) ? $_POST['product_discount'][$r] : NULL;
-				
-                
+
                 $g_total_txt = $_POST['grand_total'][$r];
-				
+                $item_price_id 	= $_POST['price_id'][$r];
                 if (isset($item_code) && isset($real_unit_price) && isset($unit_price) && isset($item_quantity)) {
                     $product_details = $item_type != 'manual' ? $this->pos_model->getProductByCode($item_code) : NULL;
                     $unit_price = $real_unit_price;
@@ -572,7 +572,8 @@ class Pos extends MY_Controller
                         'real_unit_price' => $real_unit_price,
 						'product_noted' => $item_note,
 						'expiry' 			=> $expdate,
-						'expiry_id' 		=> $expire_date_id
+						'expiry_id' 		=> $expire_date_id,
+                        'price_id' 		=> $item_price_id
                     );					
                     $total += $subtotal;
 					$g_total_txt1 += $subtotal;

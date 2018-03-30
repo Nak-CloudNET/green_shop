@@ -6480,4 +6480,15 @@ class Sales_model extends CI_Model
 		}
 		return false;
 	}
+
+    public function getDeliveryByIssueInvoice($id = Null)
+    {
+        $this->db->select('id');
+        $q = $this->db->get_where('deliveries', array('issued_sale_id' => $id));
+        if ($q->num_rows() > 0) {
+            return $q->row();
+        }
+        return false;
+    }
+
 }

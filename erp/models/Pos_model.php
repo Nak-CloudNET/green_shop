@@ -374,7 +374,6 @@ class Pos_model extends CI_Model
 
     public function addSale($data = array(), $items = array(), $payments = array(), $sid = NULL, $loans = array(), $combine_table = NULL)
     {
-		
 		$this->load->model('sales_model');
         //$cost = $this->site->costing($items);		
 		foreach($items as $g){
@@ -399,6 +398,7 @@ class Pos_model extends CI_Model
 			$data['payment_status'] = 'due';
 		}
         if ($this->db->insert('sales', $data)) {
+
             $sale_id = $this->db->insert_id();
             if ($this->site->getReference('pos',$data['biller_id']) == $data['reference_no']) {
 				$this->site->updateReference('pos',$data['biller_id']);
