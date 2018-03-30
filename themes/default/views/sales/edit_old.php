@@ -1,8 +1,7 @@
-<style>
-.select2-result.select2-result-unselectable.select2-disabled {
-	display: none;
-}
-</style>
+<?php
+	//$this->erp->print_arrays($status);
+?>
+
 <script type="text/javascript">
     var count = 1, an = 1, product_variant = 0, DT = <?= $Settings->default_tax_rate ?>,
         product_tax = 0, invoice_tax = 0, total_discount = 0, total = 0, allow_discount = <?= ($Owner || $Admin || $this->session->userdata('allow_discount')) ? 1 : 0; ?>,
@@ -11,25 +10,25 @@
     //var audio_error = new Audio('<?= $assets ?>sounds/sound3.mp3');
     $(document).ready(function () {
         <?php if ($inv) { ?>
-        __setItem('edit_sale', '<?= $edit_sale; ?>');
-        __setItem('sldate', '<?= $this->erp->hrld($inv->date); ?>');
-        __setItem('slcustomer', '<?= $inv->customer_id ?>');
-        __setItem('slbiller', '<?= $inv->biller_id ?>');
-        __setItem('slref', '<?= $inv->reference_no ?>');
-        __setItem('slwarehouse', '<?= $inv->warehouse_id ?>');
-        __setItem('slsale_status', '<?= $inv->sale_status ?>');
-        __setItem('slpayment_status', '<?= $inv->payment_status ?>');
-        __setItem('slpayment_term', '<?= $inv->payment_term ?>');
-        __setItem('slnote', '<?= str_replace(array("\r", "\n","'"), array("","","&#039"), $this->erp->decode_html($inv->note)); ?>');
-        __setItem('slinnote', '<?= str_replace(array("\r", "\n","'"), array("","","&#039"), $this->erp->decode_html($inv->staff_note)); ?>');
-        __setItem('sldiscount', '<?= $inv->order_discount_id ?>');
-        __setItem('sltax2', '<?= $inv->order_tax_id ?>');
-        __setItem('slshipping', '<?= $inv->shipping ?>');
-        __setItem('slitems', JSON.stringify(<?= $inv_items; ?>));
+        localStorage.setItem('edit_sale', '<?= $edit_sale; ?>');
+        localStorage.setItem('sldate', '<?= $this->erp->hrld($inv->date); ?>');
+        localStorage.setItem('slcustomer', '<?= $inv->customer_id ?>');
+        localStorage.setItem('slbiller', '<?= $inv->biller_id ?>');
+        localStorage.setItem('slref', '<?= $inv->reference_no ?>');
+        localStorage.setItem('slwarehouse', '<?= $inv->warehouse_id ?>');
+        localStorage.setItem('slsale_status', '<?= $inv->sale_status ?>');
+        localStorage.setItem('slpayment_status', '<?= $inv->payment_status ?>');
+        localStorage.setItem('slpayment_term', '<?= $inv->payment_term ?>');
+        localStorage.setItem('slnote', '<?= str_replace(array("\r", "\n"), "", $this->erp->decode_html($inv->note)); ?>');
+        localStorage.setItem('slinnote', '<?= str_replace(array("\r", "\n"), "", $this->erp->decode_html($inv->staff_note)); ?>');
+        localStorage.setItem('sldiscount', '<?= $inv->order_discount_id ?>');
+        localStorage.setItem('sltax2', '<?= $inv->order_tax_id ?>');
+        localStorage.setItem('slshipping', '<?= $inv->shipping ?>');
+        localStorage.setItem('slitems', JSON.stringify(<?= $inv_items; ?>));
 		<?php /* if (isset($payment->paid_by)) { */ ?>
-		//__setItem('paid_by_1', '<?= $payment->paid_by ?>');
-		//__setItem('paid', '<?= $payment->amount ?>');
-		//__setItem('deposited', '<?= $payment->amount ?>');
+		//localStorage.setItem('paid_by_1', '<?= $payment->paid_by ?>');
+		//localStorage.setItem('paid', '<?= $payment->amount ?>');
+		//localStorage.setItem('deposited', '<?= $payment->amount ?>');
 		
 		//$('#slpayment_status').val(payment_status);
 		//$("#dp_details").html('<?=$this->erp->formatDecimal($sale_order->paid);?>');
@@ -39,8 +38,8 @@
 		<?php /* } */ ?>
         <?php } ?>
 		
-		if(__getItem('quote_ID')){
-			__removeItem('quote_ID');
+		if(localStorage.getItem('quote_ID')){
+			localStorage.removeItem('quote_ID');
 		}
 		
 		$("#sldate").datetimepicker({
@@ -56,16 +55,16 @@
 		}).datetimepicker('update', new Date());
 		
         $(document).on('change', '#sldate', function (e) {
-            __setItem('sldate', $(this).val());
+            localStorage.setItem('sldate', $(this).val());
         });
-        if (sldate = __getItem('sldate')) {
+        if (sldate = localStorage.getItem('sldate')) {
             $('#sldate').val(sldate);
         }
         $(document).on('change', '#slbiller', function (e) {
-            __setItem('slbiller', $(this).val());
+            localStorage.setItem('slbiller', $(this).val());
         });
 		
-        if (slbiller = __getItem('slbiller')) {
+        if (slbiller = localStorage.getItem('slbiller')) {
             $('#slbiller').val(slbiller);
         }
 		
@@ -85,8 +84,7 @@
                     data: {
                         term: request.term,
                         warehouse_id: $("#slwarehouse").val(),
-                        customer_id: $("#slcustomer").val(),
-						category_id: $("#category").val()
+                        customer_id: $("#slcustomer").val()
                     },
                     success: function (data) {
                         response(data);
@@ -161,7 +159,7 @@
         });
 
         $(window).bind('beforeunload', function (e) {
-            __setItem('remove_slls', true);
+            localStorage.setItem('remove_slls', true);
             if (count > 1) {
                 var message = "You will loss data!";
                 return message;
@@ -184,10 +182,10 @@
 				if(qty_balance < 0) {
 					var product_name = $(this).parent().parent().closest('tr').find('.rname').val();
 					if(order_qty > 0) {
-                        message += '- ' + product_name + ' : Sale = ' + formatDecimal(received_qty) + ', Ordered = ' + formatDecimal(order_qty) + ', QOH = ' + formatDecimal(oh_qty) + ' !\n';
+						message += '- ' + product_name +' : Order = ' + formatDecimal(received_qty) + ', Ordered = ' + formatDecimal(order_qty) + ', QOH = ' + formatDecimal(oh_qty) + ' !\n';
 						help = true;
 					}else {
-                        message += '- ' + product_name + ' : Sale = ' + formatDecimal(received_qty) + ', QOH = ' + formatDecimal(oh_qty) + ' !\n';
+						message += '- ' + product_name +' : Order = ' + formatDecimal(received_qty) + ', QOH = ' + formatDecimal(oh_qty) + ' !\n';
 						help = true;
 					}
 				}
@@ -207,8 +205,8 @@
 			var payment_status = $("#slpayment_status").val();
 			if(payment_status == 'due' || payment_status == 'partial'){				
 				var customer_id = $('#slcustomer').val();
-				var c_balance= __getItem('cust_balance');
-				var c_limit= __getItem('credit_limit');												
+				var c_balance= localStorage.getItem('cust_balance');
+				var c_limit= localStorage.getItem('credit_limit');												
 				var cust_balance = $('#total_balance').val()-0;				
 				cust_balance+= parseFloat(c_balance);				
 				if(c_limit >= 0 && c_limit < cust_balance){					
@@ -266,12 +264,29 @@
 							</div>
 						</div>
 						<?php } ?>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <?= get_dropdown_project('biller', 'slbiller', $inv->biller_id); ?>
+                        <?php if ($Owner || $Admin || !$this->session->userdata('biller_id')) { ?>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <?= lang("biller", "slbiller"); ?>
+                                    <?php
+                                    $bl[""] = "";
+                                    foreach ($billers as $biller) {
+                                        $bl[$biller->id] = $biller->company != '-' ? $biller->code .'-'.$biller->company : $biller->name;
+                                    }
+                                    echo form_dropdown('biller', $bl, (isset($_POST['biller']) ? $_POST['biller'] : $inv->biller_id), 'id="slbiller"  data-placeholder="' . lang("select") . ' ' . lang("biller") . '" required="required" class="form-control input-tip select" style="width:100%;pointer-events: none;"');
+                                    ?>
+                                </div>
                             </div>
-                        </div>
+                        <?php } else {
+                            $biller_input = array(
+                                'type' => 'hidden',
+                                'name' => 'biller',
+                                'id' => 'slbiller',
+                                'value' => $this->session->userdata('biller_id'),
+                            );
+
+                            echo form_input($biller_input);
+                        } ?>
 
                         <div class="clearfix"></div>
                         <div class="col-md-12">
@@ -358,18 +373,6 @@
                                             </div>
                                         </div>
                                     </div>
-									<div class="col-md-4">
-                                        <div class="form-group">
-                                            <?= lang("category_name", "category_name"); ?>
-                                            <?php
-                                            $cate[''] = lang('all');
-                                            foreach ($categories as $category) {
-                                                $cate[$category->id] = $category->name;
-                                            }
-                                            echo form_dropdown('category', $cate, (isset($_POST['category']) ? $_POST['category'] : ''), 'id="category" class="form-control input-tip select" data-placeholder="' . lang("select") . ' ' . lang("category") . '" style="width:100%;" ');
-                                            ?>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -408,7 +411,7 @@
                             <div class="control-group table-group">
                                 <label class="table-label"><?= lang("order_items"); ?> *</label>
 
-                                <div class="controls table-controls table-responsive">
+                                <div class="controls table-controls">
                                     <table id="slTable"
                                            class="table items table-striped table-bordered table-condensed table-hover">
                                         <thead>
@@ -458,12 +461,14 @@
                                 </div>
                             </div>
                         </div>
+                        <?php if (($Owner || $Admin || $this->session->userdata('allow_discount')) || $inv->order_discount_id) { ?>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <?= lang("order_discount_percent", "sldiscount"); ?>
+                                <?= lang("order_discount", "sldiscount"); ?>
                                 <?php echo form_input('order_discount', '', 'class="form-control input-tip" id="sldiscount" '.(($Owner || $Admin || $this->session->userdata('allow_discount')) ? '' : 'readonly="true"')); ?>
                             </div>
                         </div>
+                        <?php } ?>
 
                         <div class="col-md-4">
                             <div class="form-group">
@@ -523,7 +528,6 @@
                         </div>
 						-->
 						<input type="hidden" name="sale_status" id="slsale_status" value="<?= $inv->sale_status ?>" required="required" />
-                        <input type="hidden" name="pos" id="pos" value="<?= $inv->pos ?>">
 
                         <div class="col-sm-4">
                             <div class="form-group">
@@ -975,7 +979,7 @@
 				//$('#slwarehouse').val($('#slwarehouse option:first-child').val()).trigger('change');
                 //$("#slwarehouse").select2("val", "<?=$Settings->default_warehouse;?>");
 				
-				if(slwarehouse = __getItem('slwarehouse')){
+				if(slwarehouse = localStorage.getItem('slwarehouse')){
 					$('#slwarehouse').select2("val", slwarehouse);
 				}else{
 					$("#slwarehouse").select2("val", "<?=$Settings->default_warehouse;?>");
