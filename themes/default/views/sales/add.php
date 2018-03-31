@@ -1207,7 +1207,8 @@
                         <label for="pprice" class="col-sm-4 control-label"><?= lang('unit_price') ?></label>
 
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" id="pprice">
+                            <input type="hidden" class="form-control" id="pprice">
+                            <input type="" class="form-control" id="pprice_show">
 							<input type="hidden" class="form-control" id="own_rate">
 							<input type="hidden" class="form-control" id="setting_rate">
                         </div>

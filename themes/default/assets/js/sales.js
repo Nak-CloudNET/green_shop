@@ -1439,6 +1439,7 @@ if (slwarehouse = __getItem('slwarehouse')) {
 	 * Edit Row Method
 	 ----------------------- */
 	 $(document).on('click', '#editItem', function () {
+
 		var row = $('#' + $('#row_id').val());
 		var item_id = row.attr('data-item-id'), new_pr_tax = $('#ptax').val(), new_pr_tax_rate = false;
 		if (new_pr_tax) {
@@ -1450,7 +1451,8 @@ if (slwarehouse = __getItem('slwarehouse')) {
 		}
 		var request_quantity = $("#request_quantity").val();
 		var cur_stock_qty = $("#cur_stock_qty").val();
-	    var price	= parseFloat($('#pprice').val());
+	    var price	= parseFloat($('#pprice_show').val());
+
 		var opt_cur = $("#pgroup_price option:selected").attr('rate');
 		if(opt_cur == undefined)
 		{
@@ -1460,7 +1462,6 @@ if (slwarehouse = __getItem('slwarehouse')) {
 			
 			price = (price*opt_cur);
 		}
-
 		var total_price = price * parseFloat($('#pquantity').val());
 		
 		if (site.settings.product_discount == 1 && $('#pdiscount').val()) {
@@ -1508,8 +1509,6 @@ if (slwarehouse = __getItem('slwarehouse')) {
 			slitems[item_id].group_prices[0].id     = price_id;
 			
 		}
-		
-		
 		__setItem('slitems', JSON.stringify(slitems));
 		$('#prModal').modal('hide');
 			
