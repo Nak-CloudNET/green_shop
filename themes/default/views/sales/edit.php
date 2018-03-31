@@ -64,7 +64,6 @@
         $(document).on('change', '#slbiller', function (e) {
             __setItem('slbiller', $(this).val());
         });
-		
         if (slbiller = __getItem('slbiller')) {
             $('#slbiller').val(slbiller);
         }
@@ -143,6 +142,7 @@
 						});
 						$(this).val('');
 					} else {
+
 						var row = add_invoice_item(ui.item);
 						if (row)
 							$(this).val('');
@@ -171,7 +171,6 @@
             $(window).unbind('beforeunload');
         });
         $('#edit_sale').click(function (e) {
-			
 			e.preventDefault();
 			var message = '';
 			var help = false;

@@ -1896,6 +1896,7 @@ function nsCustomer() {
 }
 //localStorage.clear();
 function loadItems() {
+
 	if (__getItem('slitems')) {
 		total               = 0;
 		count               = 1;
@@ -1917,10 +1918,12 @@ function loadItems() {
 		
 		var no=1;
 		$.each(slitems, function () {
+
 			var item = this;
 			//var item_id 			= site.settings.item_addition == 1 ? item.item_id : item.id;
 			var item_id 			= site.settings.item_addition == 1 ? item.id : item.id;
 			slitems[item_id] 		= item;
+
 			var qty_received 		= (item.row.received > 0) ? item.row.received : item.row.qty;
 			var product_id 			= item.row.id,
 				item_type 			= item.row.type,
@@ -1975,6 +1978,7 @@ function loadItems() {
 			if(item.row.start_date != null){
 				var end_date = moment(item.row.end_date).format('DD/MM/YYYY');
 			}
+
 			if(is_edit == 0){
 				if(item_promotion && item.row.start_date && item.row.end_date){
 					var pro_start_date = moment(item.row.start_date).format('DD/MM/YYYY');
@@ -2079,6 +2083,7 @@ function loadItems() {
 					}
 				
 			}else{
+
 					if(item.row.item_load==0)
 					{
 						if(all_group_prices){
@@ -2329,10 +2334,11 @@ function loadItems() {
 				'<input type="hidden" name="psoqty[]" class="psoqty" id="psoqty_' + row_no + '" value="' + psoqty + '" />' +
 				'<input type="hidden" name="qty_oh[]" class="qty_oh" id="qty_oh_' + row_no + '" value="' + (item_qoh + old_qty_rec) + '" />' +
 				'<span class="qoh">'+ formatDecimal(item_qoh ? item_qoh : 0) +'</span></td>';
-			
+
 			if (site.settings.product_discount == 1) {
-				tr_html += '<td class="text-right"><input class="text-right form-control rdiscount_t rdiscount" name="product_discount[]" type="text" id="discount_' + row_no + '" value="' + item_dis + '"><span style="display:none;" class="text-right sdiscount text-danger" id="sdiscount_' + row_no + '">' + formatDecimal(item_discount) + '</span></td>';
+				tr_html += '<td class="text-right"><input class="text-right form-control rdiscount_t rdiscount" name="product_discount[]" type="text" id="discount_' + row_no + '" value="' + item_ds + '"><span style="display:none;" class="text-right sdiscount text-danger" id="sdiscount_' + row_no + '">' + formatDecimal(item_discount) + '</span></td>';
 			}
+            //alert(item_ds);
 			if (site.settings.tax1 == 1) {
 				tr_html += '<td class="text-right"><input class="form-control input-sm text-right rproduct_tax" name="product_tax[]" type="hidden" id="product_tax_' + row_no + '" value="' + pr_tax.id + '"><span class="text-right sproduct_tax" id="sproduct_tax_' + row_no + '">' + (parseFloat(pr_tax_rate) != 0 ? '(' + pr_tax_rate + ')' : '') + ' ' + formatDecimal(pr_tax_val*item_qty) + '</span></td>';
 			}
@@ -2368,8 +2374,8 @@ function loadItems() {
 						}
 					}
 				});
-			} else*/ 
-			
+			} else*/
+
 			if(item_type == 'standard') {
 				if(site.settings.overselling != 1 && site.settings.product_expiry == 1){
 					
