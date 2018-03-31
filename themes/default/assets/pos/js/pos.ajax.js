@@ -655,6 +655,7 @@ $(document).ready(function () {
 	 * Edit Row Method
 	 ----------------------- */
 	$(document).on('click', '#editItem', function () {
+
 		var row = $('#' + $('#row_id').val());
 		var item_id = row.attr('data-item-id'), new_pr_tax = $('#ptax').val(), new_pr_tax_rate = {};
 		if (new_pr_tax) {
@@ -678,8 +679,8 @@ $(document).ready(function () {
 
 		if (site.settings.product_discount == 1 && $('#pdiscount').val()) {
 			if(!is_valid_discount($('#pdiscount').val()) || $('#pdiscount').val() > price) {
-				bootbox.alert(lang.unexpected_value);
-				return false;
+				//bootbox.alert(lang.unexpected_value);
+				//return false;
 			}
 		}
 
