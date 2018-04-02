@@ -6293,7 +6293,7 @@ class Purchases extends MY_Controller
                 $options 				= $this->purchases_model->getProductOptions($row->id);
 				$row->real_cost 		= $row->cost;
                 if ($options) {
-					$opt = $options[count($options)-1];;
+					$opt = $options[count($options)-1];
                     if (!$option) {
                         $option = $opt->id;
                     }
@@ -6392,13 +6392,15 @@ class Purchases extends MY_Controller
             $c = str_replace(".", "", microtime(true));
             $r = 0;
             foreach ($rows as $row) {
+				
                 $option = false;
                 $row->item_tax_method = $row->tax_method;
                 $options = $this->purchases_model->getProductOptions($row->id);
 				$row->real_cost = $row->cost;
-                if ($options) {
-
-                    $opt = current($options);
+				
+				
+				if ($options) {
+					$opt = $options[count($options)-1];
                     if (!$option) {
                         $option = $opt->id;
                     }
@@ -6407,13 +6409,12 @@ class Purchases extends MY_Controller
                     $opt->cost = 0;
                 }
                 $row->option = $option;
+				
                 if ($opt->cost != 0) {
                     $row->cost = $opt->cost;
                 } else {
                     $row->cost = $row->cost;
                     if ($supplier_id == $row->supplier1 && (!empty($row->supplier1price)) && $row->supplier1price != 0) {
-
-
                         $row->cost = $row->supplier1price;
 
                     } elseif ($supplier_id == $row->supplier2 && (!empty($row->supplier2price)) && $row->supplier2price != 0) {
@@ -6432,12 +6433,11 @@ class Purchases extends MY_Controller
                         $row->cost = $row->supplier4price;
 
                     } elseif ($supplier_id == $row->supplier5 && (!empty($row->supplier5price)) && $row->supplier5price != 0) {
-
-
                         $row->cost = $row->supplier5price;
 
                     }
                 }
+				
 				$row->net_cost 			= $row->cost;
                 $row->real_unit_cost 	= $row->cost;
 				
