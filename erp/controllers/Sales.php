@@ -12318,8 +12318,167 @@ class Sales extends MY_Controller
         }
     }
 
-
     function suggests()
+    {
+        $term = $this->input->get('term', TRUE);
+        $warehouse_id = $this->input->get('warehouse_id', TRUE);
+        $customer_id = $this->input->get('customer_id', TRUE);
+        $category_id = $this->input->get('category_id', TRUE);
+
+        if (strlen($term) < 1 || !$term) {
+            die("<script type='text/javascript'>setTimeout(function(){ window.top.location.href = '" . site_url('welcome') . "'; }, 10);</script>");
+        }
+
+        $spos = strpos($term, '%');
+        if ($spos !== false) {
+            $st = explode("%", $term);
+            $sr = trim($st[0]);
+            $option = trim($st[1]);
+        } else {
+            $sr = $term;
+            $option = '';
+        }
+        $customer = $this->site->getCompanyByID($customer_id);
+        $customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
+        $user_setting = $this->site->getUserSetting($this->session->userdata('user_id'));
+        $rows = $this->sales_model->getProductNumber($sr, $warehouse_id, $user_setting->sales_standard, $user_setting->sales_combo, $user_setting->sales_digital, $user_setting->sales_service, $user_setting->sales_category, $category_id);
+        $expiry_status = 0;
+        if($this->site->get_setting()->product_expiry == 1){
+            $expiry_status = 1;
+        }
+        if ($rows) {
+            foreach ($rows as $row) {
+                $option = FALSE;
+                $row->quantity = 0;
+                $row->item_tax_method = $row->tax_method;
+                $row->qty = 1;
+                $row->discount = '0';
+                $row->serial = '';
+                $options = $this->sales_model->getProductOptions($row->id, $warehouse_id);
+
+                $group_prices = $this->sales_model->getProductPriceGroup($row->id, $customer->price_group_id);
+                $all_group_prices = $this->sales_model->getProductPriceGroup($row->id);
+                if($expiry_status == 1) {
+                    $expdates = $this->sales_model->getProductExpireDate($row->id, $warehouse_id);
+                }else{
+                    $expdates = NULL;
+                }
+
+                if ($options) {
+                    $opt = $options[count($options)-1];
+                    if (!$option) {
+                        $option = $opt->id;
+                    }
+                } else {
+                    $opt = json_decode('{}');
+                    $opt->price = 0;
+                }
+                $row->option = $option;
+                $pis = $this->sales_model->getPurchasedItems($row->id, $warehouse_id, $row->option);
+                if($pis){
+                    foreach ($pis as $pi) {
+                        $row->quantity += $pi->quantity_balance;
+                    }
+                }
+                if ($options) {
+                    $option_quantity = 0;
+                    foreach ($options as $option) {
+                        $pis = $this->sales_model->getPurchasedItems($row->id, $warehouse_id, $row->option);
+                        if($pis){
+                            foreach ($pis as $pi) {
+                                $option_quantity += $pi->quantity_balance;
+                            }
+                        }
+                        if($option->quantity > $option_quantity) {
+                            $option->quantity = $option_quantity;
+                        }
+                    }
+                }
+                if($expiry_status == 1 && $expdates != NULL){
+                    $row->expdate = $expdates[0]->id;
+                }else{
+                    $row->expdate = NULL;
+                }
+                if($row->subcategory_id)
+                {
+                    $percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,1);
+                }else{
+                    $percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
+                }
+
+                if ($opt->price != 0) {
+                    if($customer_group->makeup_cost == 1){
+                        //$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
+                        $row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
+                    }else{
+                        $row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
+                    }
+                } else {
+                    if($customer_group->makeup_cost == 1){
+                        //$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
+                        $row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
+                    }else{
+                        $row->price = $row->price + (($row->price * $customer_group->percent) / 100);
+                    }
+                }
+
+                if($group_prices)
+                {
+                    $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
+                    $row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
+                    $row->price = $group_prices[0]->price ? $group_prices[0]->price : 0;
+
+                    if($customer_group->makeup_cost == 1){
+                        //$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
+                        $row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
+                    }else{
+                        $row->price = $group_prices[0]->price + (($group_prices[0]->price * $customer_group->percent) / 100);
+                    }
+                }else{
+                    $row->price_id = 0;
+                }
+                $pending_so_qty = $this->sales_model->getPendingSOQTYByProductID($row->id);
+                $psoqty = 0;
+
+                if ($pending_so_qty) {
+                    $psoqty = $pending_so_qty->psoqty;
+                }
+
+                $row->psoqty = $psoqty;
+                $row->real_unit_price = $row->price;
+                $row->w_piece		  = $row->cf1;
+                $row->piece			  = 0;
+                $row->is_sale_order   = 0;
+                $row->wpiece		  = $row->cf1;
+                $row->digital_code	  = "";
+                $row->digital_name	  = "";
+                $row->digital_id	  = 0;
+                $row->old_qty_rec	  = 0;
+                $row->item_load       = 0;
+                $row->oqty			  = 0;
+                $row->rate_item_cur   = (isset($curr_by_item->rate)?$curr_by_item->rate:0);
+                $row->click_edit_count= 0;
+
+                $combo_items = FALSE;
+                $customer_percent = $customer_group->percent ? $customer_group->percent : 0;
+                if ($row->tax_rate) {
+                    $tax_rate = $this->site->getTaxRateByID($row->tax_rate);
+                    if ($row->type == 'combo') {
+                        $combo_items = $this->sales_model->getProductComboItems($row->id, $warehouse_id);
+                    }
+                    $pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => $tax_rate, 'options' => $options, 'expdates'=>$expdates, 'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>(isset($percent->percent)?$percent->percent:0));
+                } else {
+                    $pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => false, 'options' => $options, 'expdates'=>$expdates, 'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>(isset($percent->percent)?$percent->percent:0));
+                }
+            }
+            //$this->erp->print_arrays($pr);
+            echo json_encode($pr);
+        } else {
+            echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
+        }
+    }
+
+    function suggests_old()
     {
         $term = $this->input->get('term', TRUE);
         $warehouse_id = $this->input->get('warehouse_id', TRUE);

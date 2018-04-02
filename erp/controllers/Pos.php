@@ -1742,7 +1742,8 @@ class Pos extends MY_Controller
 
     function getProductDataByCode($code = NULL, $warehouse_id = NULL, $cust_id = null, $suspend_id = null, $item_rows = null, $sub_total = null)
     {
-		$this->load->model('sales_model');
+
+        $this->load->model('sales_model');
         $suspend_id = $this->input->get('suspend_id');
         $item_rows  = $this->input->get('item_rows');
         $sub_total  = $this->input->get('sub_total');
@@ -1762,95 +1763,123 @@ class Pos extends MY_Controller
             die();
         }
 
-        $customer = $this->site->getCompanyByID($customer_id);
-        $customer_group = $this->site->getCustomerGroupByID($customer->customer_group_id);
-        $row = $this->pos_model->getWHProduct($code, $warehouse_id);
-		$orderqty = $this->pos_model->getQtyOrder($row->product_id);
-		$w_piece = $this->sales_model->getProductVariantByOptionID($row->id);
-        $option = '';
-		$expiry_status = 0;
-		if($this->site->get_setting()->product_expiry == 1){
-			$expiry_status = 1;
-		}
-		
+        $customer           = $this->site->getCompanyByID($customer_id);
+        $customer_group     = $this->site->getCustomerGroupByID($customer->customer_group_id);
+        $row                = $this->pos_model->getWHProduct($code, $warehouse_id);
+
+        $orderqty           = $this->pos_model->getQtyOrder($row->product_id);
+        $w_piece            = $this->sales_model->getProductVariantByOptionID($row->id);
+        $group_prices       = $this->sales_model->getProductPriceGroup($row->id,$customer->price_group_id);
+        $option             = '';
+        $expiry_status      = 0;
+        if($this->site->get_setting()->product_expiry == 1){
+            $expiry_status = 1;
+        }
+
         if($row){
-			
-            $combo_items = FALSE;
-            $row->item_tax_method = $row->tax_method;
-            $row->qty = 1;
-            $row->discount = '0';
-            $row->serial = '';
-            $options = $this->pos_model->getProductOptions($row->id, $warehouse_id);
-			if($expiry_status == 1) {
-				$expdates = $this->sales_model->getProductExpireDate($row->id, $warehouse_id);
-			}else{
-				$expdates = NULL;
-			}
-			if ($options) {
-                $opt = current($options);
+
+            $combo_items            = FALSE;
+            $row->item_tax_method   = $row->tax_method;
+            $row->qty               = 1;
+            $row->discount          = '0';
+            $row->serial            = '';
+            $options                = $this->pos_model->getProductOptions($row->id, $warehouse_id);
+            $options                = $this->sales_model->getProductOptions($row->id, $warehouse_id);
+
+            if($expiry_status == 1) {
+                $expdates = $this->sales_model->getProductExpireDate($row->id, $warehouse_id);
+            }else{
+                $expdates = NULL;
+            }
+
+            if ($options) {
+                $opt = $options[count($options)-1];
                 if (!$option) {
                     $option = $opt->id;
+                    $optqty = $opt->qty_unit;
                 }
             } else {
                 $opt = json_decode('{}');
                 $opt->price = 0;
             }
+
             $row->option = $option;
-			if($expiry_status == 1 && $expdates != NULL){
-				$row->expdate = $expdates[0]->id;
-			}else{
-				$row->expdate = NULL;
-			}
-			
-			if($row->subcategory_id)
-			{
-				$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,1);
-			}else{
-				$percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
-			}
-			
-			$setting = $this->sales_model->getSettings();
-			
-           if ($opt->price != 0) {
-				if($customer_group->makeup_cost == 1){
-					if($setting->attributes==1)
-					{
-						$row->price = ($row->cost*$opt->qty_unit)  + ((($row->cost*$opt->qty_unit)  * (isset($percent->percent)?$percent->percent:0)) / 100);
-					}
-				}else{
-					if($setting->attributes==1)
-					{
-						$row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
-					}
-				}
-			} else { 
-				if($customer_group->makeup_cost == 1){
-					if($setting->attributes==1)
-					{
-						$row->price = $row->cost  + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
-					}
-				
-				}else{
-					if($setting->attributes==1)
-					{
-						$row->price = $row->price + (($row->price * $customer_group->percent) / 100);
-					}
-					
-				}
-			}
-			
-			
-			
+            if($expiry_status == 1 && $expdates != NULL){
+                $row->expdate = $expdates[0]->id;
+            }else{
+                $row->expdate = NULL;
+            }
+
+            if($row->subcategory_id)
+            {
+                $percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,1);
+            }else{
+                $percent = $this->sales_model->getCustomerMakup($customer->customer_group_id,$row->id,0);
+            }
+            $setting = $this->sales_model->getSettings();
+
+            if ($opt->price != 0) {
+                if($customer_group->makeup_cost == 1 && $percent!=""){
+                    if($setting->attributes==1)
+                    {
+                        if(isset($percent->percent)) {
+                            $row->price = ($row->cost*$opt->qty_unit)  + ((($row->cost*$opt->qty_unit)  * (isset($percent->percent)?$percent->percent:0)) / 100);
+                        }else {
+                            $row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
+                        }
+                    }
+                }else{
+                    if($setting->attributes==1)
+                    {
+                        $row->price = $opt->price + (($opt->price * $customer_group->percent) / 100);
+                    }
+                }
+            } else {
+                if($customer_group->makeup_cost == 1 && $percent!=""){
+                    if($setting->attributes==1)
+                    {
+                        if(isset($percent->percent)) {
+                            $row->price = $row->cost  + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
+                        }else {
+                            $row->price = $row->price + (($row->price * $customer_group->percent) / 100);
+                        }
+                    }
+                }else{
+                    if($setting->attributes==1)
+                    {
+                        $row->price = $row->price + (($row->price * $customer_group->percent) / 100);
+                    }
+                }
+            }
+
+            if($group_prices)
+            {
+                $curr_by_item = $this->site->getCurrencyByCode($group_prices[0]->currency_code);
+                $row->price_id = $group_prices[0]->id ? $group_prices[0]->id : 0;
+                $row->price = $group_prices[0]->price ? $group_prices[0]->price : 0;
+
+                if($customer_group->makeup_cost == 1){
+                    //$row->price = $row->cost + (($row->cost * $customer_group->percent) / 100);
+                    $row->price = $row->cost + (($row->cost * (isset($percent->percent)?$percent->percent:0)) / 100);
+
+                }else{
+                    //$row->price = $group_prices[0]->price;
+                    $row->price = $group_prices[0]->price + (($group_prices[0]->price * $customer_group->percent) / 100);
+                }
+            }else{
+                $row->price_id = 0;
+            }
+
+
             $row->quantity = 0;
             $pis = $this->pos_model->getPurchasedItems($row->id, $warehouse_id, $row->option);
-			
-			$group_prices = $this->sales_model->getProductPriceGroupId($row->id, $customer->price_group_id);
-			$all_group_prices = $this->sales_model->getProductPriceGroup($row->id);
-			
-			$row->price_id = 0;
-			
+
+            $group_prices       = $this->sales_model->getProductPriceGroupId($row->id, $customer->price_group_id);
+            $all_group_prices   = $this->sales_model->getProductPriceGroup($row->id, $customer->price_group_id);
+            $row->price_id = $all_group_prices[0]->id;
+
             if($pis){
-				foreach ($pis as $pi) {
+                foreach ($pis as $pi) {
                     $row->quantity += $pi->quantity_balance;
                 }
             }
@@ -1868,32 +1897,69 @@ class Pos extends MY_Controller
                     }
                 }
             }
-            $row->real_unit_price = $row->price; 			
-			$row->piece	  = 0;
-			$row->wpiece  = 0;
-			$row->digital_id	  = 0;
-			$row->digital_code	  = '';
-			$row->digital_name	  = '';
-			$row->w_piece = $row->cf1;
-			$row->printed = 0;
-            $combo_items  = FALSE;
+            $row->real_unit_price   = $row->price;
+            $row->piece	            = 0;
+            $row->wpiece            = 0;
+            $row->digital_id	    = 0;
+            $row->digital_code	    = '';
+            $row->digital_name	    = '';
+            $row->w_piece           = $row->cf1;
+            $row->printed           = 0;
+            $combo_items            = FALSE;
+            $customer_percent       = $customer_group ? $customer_group->percent : 0;
             if ($row->tax_rate){
                 $tax_rate = $this->site->getTaxRateByID($row->tax_rate);
                 if ($row->type == 'combo') {
                     $combo_items = $this->pos_model->getProductComboItems($row->id, $warehouse_id);
                 }
-                $pr = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->code, 'label' => $row->name . " (" . $row->code . ")",'image' => $row->image,'cost' => $row->cost,'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => $tax_rate, 'options' => $options, 'expdates'=>$expdates, 'item_price' => $row->price,'orderqty'=>isset($orderqty->quantity), 'group_prices' => $group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_group->percent,'makeup_cost_percent'=>$percent->percent);
+                $pr = array(
+                    'id'                    => str_replace(".", "", microtime(true)),
+                    'item_id'               => $row->code,
+                    'label'                 => $row->name . " (" . $row->code . ")",
+                    'image'                 => $row->image,
+                    'cost'                  => $row->cost,
+                    'row'                   => $row,
+                    'combo_items'           => $combo_items,
+                    'tax_rate'              => $tax_rate,
+                    'options'               => $options,
+                    'expdates'              => $expdates,
+                    'item_price'            => $row->price,
+                    'orderqty'              =>($orderqty?$orderqty->quantity:0),
+                    'group_prices'          => $group_prices,
+                    'all_group_prices'      => $all_group_prices,
+                    'makeup_cost'           => ($customer_group ? $customer_group->makeup_cost : 0),
+                    'customer_percent'      => $customer_percent,
+                    'makeup_cost_percent'   => $percent?$percent->percent:0
+                );
             }else {
-                $pr = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->code, 'label' => $row->name . " (" . $row->code . ")",'image' => $row->image, 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => false, 'options' => $options, 'expdates'=>$expdates, 'item_price' => $row->price,'orderqty'=>$orderqty->quantity, 'group_prices' => $group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_group->percent,'makeup_cost_percent'=>$percent->percent);
-            } 
-			//$this->erp->print_arrays($pr);
+                $pr = array(
+                    'id'                    => str_replace(".", "", microtime(true)),
+                    'item_id'               => $row->code,
+                    'label'                 => $row->name . " (" . $row->code . ")",
+                    'image'                 => $row->image,
+                    'row'                   => $row,
+                    'combo_items'           => $combo_items,
+                    'tax_rate'              => false,
+                    'options'               => $options,
+                    'expdates'              => $expdates,
+                    'item_price'            => $row->price,
+                    'orderqty'              => $orderqty->quantity,
+                    'group_prices'          => $group_prices,
+                    'all_group_prices'      => $all_group_prices,
+                    'makeup_cost'           => ($customer_group ? $customer_group->makeup_cost : 0),
+                    'customer_percent'      => $customer_percent,
+                    'makeup_cost_percent'   => $percent->percent
+                );
+            }
+            //$this->erp->print_arrays($pr);
             echo json_encode($pr);
         } else {
-			
+
             echo NULL;
-			
+
         }
     }
+
 
 	function getProductSearchByCode($code = NULL, $warehouse_id = NULL, $cust_id = null, $suspend_id = null, $item_rows = null, $sub_total = null)
     {
