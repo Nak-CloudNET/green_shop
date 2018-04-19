@@ -63,7 +63,7 @@
                     }
                 }
             },
-			$('#customer').val(<?= $this->input->post('customer') ?>);
+			$('#customer').val('<?= $this->input->post('customer')?>);
         });
 
         <?php } ?>
@@ -291,8 +291,7 @@
 									$purchases_detail=$result->result();
 								
 									?>
-									
-									
+
 									<tr class="info-reference_no">
 										<td><input type="checkbox" class="checkbox multi-select input-xs" name='val[]' value="<?php echo $purchase->id ?>" /></td>
 										<!--

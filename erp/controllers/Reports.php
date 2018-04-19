@@ -14237,6 +14237,7 @@ class Reports extends MY_Controller
 
     function monthly_purchases($warehouse_id = NULL, $year = NULL, $pdf = NULL, $user_id = NULL)
     {
+
         $this->erp->checkPermissions('monthly',NULL,'purchase_report');
         if (!$this->Owner && !$this->Admin && $this->session->userdata('warehouse_id')) {
             $warehouse_id = $this->session->userdata('warehouse_id');
@@ -26223,7 +26224,6 @@ class Reports extends MY_Controller
 					erp_purchases.created_by
 				FROM
 					`erp_purchases`
-				INNER JOIN erp_purchase_items ON erp_purchases.id = erp_purchase_items.purchase_id
 			
 				GROUP BY
 					erp_purchases.id,reference_no";

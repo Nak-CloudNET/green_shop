@@ -1,3 +1,7 @@
+<?php
+    //$this->erp ->print_arrays($inv);
+?>
+
 <style>
 .select2-result.select2-result-unselectable.select2-disabled {
 	display: none;

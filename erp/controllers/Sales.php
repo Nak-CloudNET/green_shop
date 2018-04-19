@@ -55,7 +55,6 @@ class Sales extends MY_Controller
     
 	function modal_views($id = NULL)
     {
-		
         $this->erp->checkPermissions('index', null, 'sales');	
         if ($this->input->get('id')) {
             $id = $this->input->get('id');
@@ -85,7 +84,6 @@ class Sales extends MY_Controller
     {
         $this->erp->checkPermissions('index',null, 'sales');
         $this->load->model('reports_model');
-         
 		$alert_id = $this->input->get('alert_id');
         $this->data['alert_id'] = $alert_id;
         

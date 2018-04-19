@@ -4631,5 +4631,57 @@ class Site extends CI_Model
 		}
 		return false;
 	}
+
+	function getAllSales() {
+	    $q = $this->db->get('sales');
+        if($q->num_rows()>0){
+            foreach($q->result() as $row){
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+    }
+
+    function getSaleItemsBySaleID($sale_id) {
+        $q = $this->db->get_where('sale_items', array('sale_id'=>$sale_id,'product_id'=>'299'));
+        if($q->num_rows()>0){
+            foreach($q->result() as $row){
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+    }
+
+    function getPurchaseItemsByTransactionID($transaction_id) {
+        $q = $this->db->get_where('purchase_items', array('transaction_id'=>$transaction_id, 'transaction_type'=> 'SALE','product_id'=>'299'));
+        if ($q->num_rows() > 0) {
+            return $q->row();
+        }
+        return FALSE;
+    }
+
+    function getAllSaleItemsByProductID($product_id) {
+        $q = $this->db->get_where('sale_items', array('product_id'=>$product_id));
+        if($q->num_rows()>0){
+            foreach($q->result() as $row){
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+    }
+
+    function getAllPurchaseItemsByProductID($product_id) {
+        $q = $this->db->get_where('purchase_items', array('transaction_type'=> 'SALE','product_id'=>$product_id));
+        if($q->num_rows()>0){
+            foreach($q->result() as $row){
+                $data[] = $row;
+            }
+            return $data;
+        }
+        return false;
+    }
 	
 }
