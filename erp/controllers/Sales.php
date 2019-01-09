@@ -4339,6 +4339,7 @@ class Sales extends MY_Controller
 	function getReferenceByProject($field,$biller_id)
 	{
 		$reference_no = $this->site->getReference($field,$biller_id);
+		//$this->erp->print_arrays($reference_no);
 		echo json_encode($reference_no);
 	}
 	

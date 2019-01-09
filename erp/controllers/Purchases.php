@@ -6392,7 +6392,6 @@ class Purchases extends MY_Controller
             $c = str_replace(".", "", microtime(true));
             $r = 0;
             foreach ($rows as $row) {
-				
                 $option = false;
                 $row->item_tax_method = $row->tax_method;
                 $options = $this->purchases_model->getProductOptions($row->id);
@@ -6445,6 +6444,8 @@ class Purchases extends MY_Controller
                 $row->qty 				= 1;
                 $row->quantity_balance 	= '';
                 $row->discount 			= '0';
+                $row->received			= 0;
+                $row->received_status	= 0;
                 unset($row->details, $row->product_details, $row->file, $row->supplier1price, $row->supplier2price, $row->supplier3price, $row->supplier4price, $row->supplier5price);
                 if ($row->tax_rate) {
                     $tax_rate = $this->site->getTaxRateByID($row->tax_rate);

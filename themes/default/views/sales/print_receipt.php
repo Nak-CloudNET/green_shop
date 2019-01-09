@@ -6,7 +6,7 @@
 	$address.=($biller->postal_code != '')? ', '.$biller->postal_code : '';
 	$address.=($biller->state != '')? ', '.$biller->state : '';
 	$address.=($biller->country != '')? ', '.$biller->country : '';
-for($i=0;$i<2;$i++){
+
 ?>
 <center>
 	<table class="table-responsive" width="1024px" border="0" cellspacing="0" style="margin:auto;">
@@ -280,17 +280,12 @@ for($i=0;$i<2;$i++){
 				</table>
 			</td>
 		</tr>
-		<?php
-		if($i == 0){
-		?>
+
 		<tr>
 			<td colspan="2">
 				<hr width="100%" size="5" style="margin-top:15px; margin-bottom:10px;" />
 			</td>
 		</tr>
-		<?php } ?>
+
 	</table>
 </center>
-<?php
- } 
-?>

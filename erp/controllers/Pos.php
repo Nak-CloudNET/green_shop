@@ -392,13 +392,12 @@ class Pos extends MY_Controller
 
     function index($sid = null, $sale_order_id=null, $combine_table = null)
     {
-		
-	$this->erp->checkPermissions('index');
+        $this->erp->checkPermissions('index');
         if (!$this->pos_settings->default_biller || !$this->pos_settings->default_customer || !$this->pos_settings->default_category) {
             $this->session->set_flashdata('warning', lang('please_update_settings'));
             redirect('pos/settings');
         }
-		if ($register = $this->pos_model->registerData($this->session->userdata('user_id'))){
+        if ($register = $this->pos_model->registerData($this->session->userdata('user_id'))){
             $register_data = array('register_id' => $register->id, 'cash_in_hand' => $register->cash_in_hand, 'register_open_time' => $register->date);
             $this->session->set_userdata($register_data);
         } else {
@@ -407,18 +406,21 @@ class Pos extends MY_Controller
         }
 
         $this->data['sid'] = $this->input->get('suspend_id') ? $this->input->get('suspend_id') : $sid;
-        $did = $this->input->post('delete_id') ? $this->input->post('delete_id') : NULL;        
+        $did = $this->input->post('delete_id') ? $this->input->post('delete_id') : NULL;
         $suspend = $this->input->post('suspend') ? TRUE : FALSE;
         $count = $this->input->post('count') ? $this->input->post('count') : NULL;
 
         //validate form input
         $this->form_validation->set_rules('customer', $this->lang->line("customer"), 'trim|required');
         $this->form_validation->set_rules('warehouse', $this->lang->line("warehouse"), 'required');
-		$this->form_validation->set_rules('date', $this->lang->line("date"));
-        $this->form_validation->set_rules('biller', $this->lang->line("biller"), 'required');        
-        $this->form_validation->set_rules('reference_nob', lang("reference_no"), 'required|is_unique[sales.reference_no]');
+        $this->form_validation->set_rules('date', $this->lang->line("date"));
+        $this->form_validation->set_rules('biller', $this->lang->line("biller"), 'required');
+        if (!$suspend) {
+            $this->form_validation->set_rules('reference_nob', lang("reference_nob"), 'required|is_unique[sales.reference_no]');
+        }
 
         if ($this->form_validation->run() == true){
+
             $quantity 			= "quantity";
             $product 			= "product";
             $unit_cost 			= "unit_cost";
@@ -429,11 +431,12 @@ class Pos extends MY_Controller
             $warehouse_id 		= $this->input->post('warehouse');
             $customer_id 		= $this->input->post('customer');
             $biller_id 			= $this->input->post('biller');
-			$saleman_id 		= $this->input->post('saleman_1');
+            $saleman_id 		= $this->input->post('saleman_1');
             $delivery_by 		= $this->input->post('delivery_by_1');
             $total_items 		= $this->input->post('total_items');
-            $sale_status        = $this->input->post('sale_status');
-            $bank_account 		= $this->input->post('bank_account');            
+            $sale_status 		= $this->input->post('sale_status');
+
+            //$sale_status 		= 'completed';
             $payment_status 	= 'due';
             $payment_term 		= 0;
             $due_date 			= date('Y-m-d', strtotime('+' . $payment_term . ' days'));
@@ -443,10 +446,18 @@ class Pos extends MY_Controller
             $biller_details 	= $this->site->getCompanyByID($biller_id);
             $biller 			= $biller_details->company != '-' ? $biller_details->company : $biller_details->name;
             $note 				= $this->erp->clear_tags($this->input->post('pos_note'));
-			$suspend_room 		= $this->input->post('suspend_room');
-			$combine_table_id 	= $this->input->post('combine_table_id');
-			$reference 			= $this->input->post('reference_nob');
-			
+            //$staff_note = $this->erp->clear_tags($this->input->post('staff_note'));
+            $suspend_room 		= $this->input->post('suspend_room');
+            $reference 			= $this->input->post('reference_nob');
+            //$this->erp->print_arrays($reference);
+            $bank_account       = $this->input->post('bank_account');
+
+            if ($this->session->userdata('biller_id')) {
+                $default_biller = JSON_decode($this->session->userdata('biller_id'));
+            } else {
+                $default_biller = $this->Settings->default_biller;
+            }
+
             $total 				= 0;
             $product_tax 		= 0;
             $order_tax 			= 0;
@@ -454,51 +465,61 @@ class Pos extends MY_Controller
             $order_discount 	= 0;
             $percentage 		= '%';
             $g_total_txt1 		= 0;
+            $total_discount 	= 0;
+            $totalcost 			= 0;
 
-			$total_discount 	= 0;
-			$totalcost 			= 0;
             $i = isset($_POST['product_code']) ? sizeof($_POST['product_code']) : 0;
-            for ($r = 0; $r < $i; $r++){
-                $item_id   = $_POST['product_id'][$r];
-                $digital_id   = $_POST['digital_id'][$r];
-                $item_type = $_POST['product_type'][$r];
-                $item_code = $_POST['product_code'][$r];
-				$item_note = $_POST['product_note'][$r];
-                $item_name = $_POST['product_name'][$r];
-				$item_cost = $_POST['item_cost'][$r];
-                $item_option = isset($_POST['product_option'][$r]) && $_POST['product_option'][$r] != 'false' ? $_POST['product_option'][$r] : NULL;
-			    $expire_date_id = isset($_POST['expdate'][$r]) && $_POST['expdate'][$r] != 'false' ? $_POST['expdate'][$r] : null;
-				$expdate = $this->sales_model->getPurchaseItemExDateByID($expire_date_id)->expiry;
-                $real_unit_price = $this->erp->formatDecimal($_POST['real_unit_price'][$r]);
-                $unit_price = $this->erp->formatDecimal($_POST['unit_price'][$r]);
-                $item_quantity = $_POST['quantity'][$r]; 
-                $item_serial = isset($_POST['serial'][$r]) ? $_POST['serial'][$r] : '';
-                $item_tax_rate = isset($_POST['product_tax'][$r]) ? $_POST['product_tax'][$r] : NULL;
-                $item_discount = isset($_POST['product_discount'][$r]) ? $_POST['product_discount'][$r] : NULL;
+            for ($r = 0; $r < $i; $r++) {
+                $item_id   		= $_POST['product_id'][$r];
+                $item_type 		= $_POST['product_type'][$r];
+                $item_code 		= $_POST['product_code'][$r];
+                $item_note 		= $_POST['product_note'][$r];
+                $item_name 		= $_POST['product_name'][$r];
+                $item_cost 		= $_POST['item_cost'][$r];
+                $item_option 	= isset($_POST['product_option'][$r]) && $_POST['product_option'][$r] != 'false' ? $_POST['product_option'][$r] : NULL;
 
-                $g_total_txt = $_POST['grand_total'][$r];
-                $item_price_id 	= $_POST['price_id'][$r];
+                $real_unit_price = $this->erp->formatDecimal($_POST['real_unit_price'][$r]);
+                $unit_price 	= $this->erp->formatDecimal($_POST['unit_price'][$r]);
+                $item_quantity 	= $_POST['quantity'][$r];
+                $item_serial 	= isset($_POST['serial'][$r]) ? $_POST['serial'][$r] : '';
+                $item_tax_rate 	= isset($_POST['product_tax'][$r]) ? $_POST['product_tax'][$r] : NULL;
+                $item_discount 	= isset($_POST['product_discount'][$r]) ? $_POST['product_discount'][$r] : NULL;
+                $price_tax_cal  = $unit_price;
+                $g_total_txt 	= $_POST['grand_total'][$r];
+
                 if (isset($item_code) && isset($real_unit_price) && isset($unit_price) && isset($item_quantity)) {
-                    $product_details = $item_type != 'manual' ? $this->pos_model->getProductByCode($item_code) : NULL;
-                    $unit_price = $real_unit_price;
-                    $pr_discount = 0;
+                    $product_details 	= $item_type != 'manual' ? $this->pos_model->getProductByCode($item_code) : NULL;
+                    $unit_price 		= $real_unit_price;
+                    $pr_discount 		= 0;
+
+                    if (isset($item_tax_rate) && $item_tax_rate != 0) {
+                        $pr_tax = $item_tax_rate;
+                        $tax_details = $this->site->getTaxRateByID($pr_tax);
+                        if ($tax_details->type == 1 && $tax_details->rate != 0) {
+                            if ($product_details && $product_details->tax_method == 1) {
+                                $price_tax_cal = $unit_price;
+                            } else {
+                                $price_tax_cal = ($unit_price * 100) / (100 + $tax_details->rate);
+                            }
+                        }
+                    }
 
                     if (isset($item_discount)) {
                         $discount = $item_discount;
                         $dpos = strpos($discount, $percentage);
                         if ($dpos !== false) {
                             $pds = explode("%", $discount);
-                            $pr_discount = ((($this->erp->formatDecimal($unit_price, 8)) * (Float) ($pds[0])) / 100);
+                            $pr_discount = ((($price_tax_cal) * (Float) ($pds[0])) / 100);
                         } else {
-                            $pr_discount = $this->erp->formatDecimal($discount/$item_quantity, 8);
+                            $pr_discount = $discount/$item_quantity;
                         }
                     }
-                    
-					$unitPrice = $unit_price;
-                    $unit_price = $this->erp->formatDecimal($unit_price - $pr_discount, 8);
-                    $item_net_price = $unit_price; 
-                    $pr_item_discount = $this->erp->formatDecimal($pr_discount * $item_quantity); 
-                    $product_discount += $pr_item_discount; 
+
+                    $unitPrice 			= $unit_price;
+                    //$unit_price 		= $this->erp->formatDecimal($unit_price - $pr_discount, 8);
+                    $item_net_price 	= $unit_price;
+                    $pr_item_discount 	= $this->erp->formatDecimal($pr_discount * $item_quantity);
+                    $product_discount 	+= $pr_item_discount;
                     $pr_tax = 0; $pr_item_tax = 0; $item_tax = 0; $tax = "";
 
                     if (isset($item_tax_rate) && $item_tax_rate != 0) {
@@ -506,80 +527,73 @@ class Pos extends MY_Controller
                         $tax_details = $this->site->getTaxRateByID($pr_tax);
                         if ($tax_details->type == 1 && $tax_details->rate != 0) {
                             if ($product_details && $product_details->tax_method == 1) {
-                                $item_tax = $this->erp->formatDecimal((($unit_price) * $tax_details->rate) / 100, 4);
-                                $tax = $tax_details->rate . "%";
-								$item_net_price = $unit_price;
+                                $item_tax 		= $this->erp->formatDecimal((($unit_price - $pr_discount) * $tax_details->rate) / 100, 4);
+                                $tax 			= $tax_details->rate . "%";
+                                $item_net_price = $unit_price;
                             } else {
-                                $item_tax = ((($unit_price) * $tax_details->rate) / (100 + $tax_details->rate));
-                                $tax = $tax_details->rate . "%";
+                                $item_tax 		= ((($unit_price) * $tax_details->rate) / (100 + $tax_details->rate));
+                                $tax 			= $tax_details->rate . "%";
                                 $item_net_price = $unit_price - $item_tax;
                             }
                         } elseif ($tax_details->type == 2) {
-
                             if ($product_details && $product_details->tax_method == 1) {
-                                $item_tax = ((($unit_price) * $tax_details->rate) / 100);
-                                $tax = $tax_details->rate . "%";
-								$item_net_price = $unit_price;
+                                $item_tax 		= ((($unit_price - $pr_discount) * $tax_details->rate) / 100);
+                                $tax 			= $tax_details->rate . "%";
+                                $item_net_price = $unit_price;
                             } else {
-                                $item_tax =((($unit_price) * $tax_details->rate) / (100 + $tax_details->rate));
-                                $tax = $tax_details->rate . "%";
+                                $item_tax 		= ((($unit_price) * $tax_details->rate) / (100 + $tax_details->rate));
+                                $tax 			= $tax_details->rate . "%";
                                 $item_net_price = $unit_price - $item_tax;
                             }
-							
-                            $item_tax = $this->erp->formatDecimal($tax_details->rate);
-                            $tax = $tax_details->rate;
+                            $item_tax 	= $this->erp->formatDecimal($tax_details->rate);
+                            $tax 		= $tax_details->rate;
                         }
-                        $pr_item_tax = $this->erp->formatDecimal($item_tax * $item_quantity, 4);
+                        $pr_item_tax 	= $this->erp->formatDecimal($item_tax * $item_quantity, 4);
                     }
-					
-					$product_tax += $pr_item_tax;
-					
-					if($item_option != 0) {
-						$row = $this->purchases_model->getVariantQtyById($item_option);
-						
-						$item_cost   = $item_cost * $row->qty_unit;
-					}
-					
-					$totalcost	+= $item_cost;
-					
-					if( $product_details->tax_method == 0){
-						$subtotal = (($unit_price * $item_quantity));
-						
-					}else{
-						$subtotal = (($unit_price * $item_quantity) + $pr_item_tax);
-					}
-					
-                    
+
+                    $product_tax += $pr_item_tax;
+
+                    $unit_price  = $this->erp->formatDecimal($unit_price - $this->erp->formatDecimal($pr_discount), 8);
+
+                    if($item_option != 0) {
+                        $row 		= $this->purchases_model->getVariantQtyById($item_option);
+                        $item_cost  = $item_cost * $row->qty_unit;
+                    }
+
+                    $totalcost	+= $item_cost;
+
+                    if( $product_details->tax_method == 0){
+                        $subtotal = (($unit_price * $item_quantity));
+
+                    }else{
+                        $subtotal = (($unit_price * $item_quantity) + $pr_item_tax);
+                    }
+
                     $products[] = array(
-                        'product_id' => $item_id,
-                        'digital_id' => $digital_id,
-                        'product_code' => $item_code,
-                        'product_name' => $item_name,
-                        'product_type' => $item_type,
-                        'option_id' => $item_option,
-                        'net_unit_price' => $item_net_price,
-                        'unit_price' => $this->erp->formatDecimal($unitPrice),
-                        'quantity' => $item_quantity,
-                        'warehouse_id' => $warehouse_id,
-                        'item_tax' => $pr_item_tax,
-                        'tax_rate_id' => $pr_tax,
-                        'tax' => $tax,
-						//'unit_cost' => $item_cost,
-                        'discount' => $item_discount,
-                        'item_discount' => $pr_item_discount,
-                        'subtotal' => $this->erp->formatDecimal($subtotal),
-                        'serial_no' => $item_serial,
-                        'real_unit_price' => $real_unit_price,
-						'product_noted' => $item_note,
-						'expiry' 			=> $expdate,
-						'expiry_id' 		=> $expire_date_id,
-                        'price_id' 		=> $item_price_id
-                    );					
+                        'product_id' 		=> $item_id,
+                        'product_code' 		=> $item_code,
+                        'product_name' 		=> $item_name,
+                        'product_type' 		=> $item_type,
+                        'option_id' 		=> $item_option,
+                        'net_unit_price' 	=> $item_net_price,
+                        'unit_price' 		=> $this->erp->formatDecimal($unitPrice),
+                        'quantity' 			=> $item_quantity,
+                        'warehouse_id' 		=> $warehouse_id,
+                        'item_tax' 			=> $pr_item_tax,
+                        'tax_rate_id' 		=> $pr_tax,
+                        'tax' 				=> $tax,
+                        //'unit_cost' 		=> $item_cost,
+                        'discount' 			=> $item_discount,
+                        'item_discount' 	=> $pr_item_discount,
+                        'subtotal' 			=> $this->erp->formatDecimal($subtotal),
+                        'serial_no' 		=> $item_serial,
+                        'real_unit_price' 	=> $real_unit_price,
+                        'product_noted' 	=> $item_note
+                    );
                     $total += $subtotal;
-					$g_total_txt1 += $subtotal;
-					$total_discount+=$product_discount;
+                    $g_total_txt1 += $subtotal;
+                    $total_discount+=$product_discount;
                 }
-				
             }
             if (empty($products)) {
                 $this->form_validation->set_rules('product', lang("order_items"), 'required');
@@ -593,16 +607,16 @@ class Pos extends MY_Controller
                 if ($opos !== false) {
                     $ods = explode("%", $order_discount_id);
                     $order_discount = $this->erp->formatDecimal((($total) * (Float)($ods[0])) / 100);
-				 
+
                 } else {
                     $order_discount = $this->erp->formatDecimal(($total * $order_discount_id)/100);
-					
+
                 }
             } else {
                 $order_discount_id = NULL;
             }
             $total_discount = $this->erp->formatDecimal($order_discount + $product_discount);
-            
+
             if ($this->Settings->tax2) {
                 $order_tax_id = $this->input->post('order_tax');
                 if ($order_tax_details = $this->site->getTaxRateByID($order_tax_id)) {
@@ -616,53 +630,40 @@ class Pos extends MY_Controller
                 $order_tax_id = null;
             }
 
-			$total_tax = $this->erp->formatDecimal(($product_tax + $order_tax), 4);
-			$grand_total = $this->erp->formatDecimal((($total - $order_discount) + ($order_tax + $this->erp->formatDecimal($shipping))), 4);
-			$cur_rate = $this->pos_model->getExchange_rate();
-			$other_cur_paid = 0;
-			$pos_balance = 0;
-			$paidd = 0;
-			$amount = $this->input->post('amount[0]');
-			$other_cur_paid = $this->input->post('other_cur_paid[0]');
-			$paidd = $amount;
-			$p_cur = isset($_POST['other_cur_paid']) ? sizeof($_POST['other_cur_paid']) : 0;
-			if(isset($p_cur) && empty($_POST['amount'][0])){
-				$paidd = $other_cur_paid / $cur_rate->rate;
-				if($paidd >= $grand_total) {
-					$pos_balance = $paidd - $grand_total;
-					$paidd = $grand_total;
-					
-					if($other_cur_paid>$pos_balance){
-						$other_cur_paid = (($other_cur_paid/$cur_rate->rate) - $pos_balance) * $cur_rate->rate;
-					}
-				}
-				
-			}else{
-				$paidd += $other_cur_paid / $cur_rate->rate;
-				$other_cur_paid = $other_cur_paid / $cur_rate->rate;
-				
-				if($paidd >= $grand_total) {
-					$pos_balance = $paidd - $grand_total;
-					$paidd = $grand_total;
-					if($other_cur_paid>$pos_balance){
-						$other_cur_paid = ($other_cur_paid - $pos_balance) * $cur_rate->rate;
-					}
-				}
-			}
-			
-			$suppend_name = $this->pos_model->get_suppendName($did);
+            $total_tax = $this->erp->formatDecimal(($product_tax + $order_tax), 4);
+            $grand_total = $this->erp->formatDecimal((($total - $order_discount) + ($order_tax + $this->erp->formatDecimal($shipping))), 4);
+            $cur_rate = $this->pos_model->getExchange_rate();
+            $other_cur_paid = 0;
+            $pos_balance = 0;
+            $paidd = 0;
+
+            $paidd 			= 0;
+            $amt_p 			= 0;
+            $p 				= isset($_POST['amount']) ? sizeof($_POST['amount']) : 0;
+            $p_cur 			= isset($_POST['other_cur_paid']) ? sizeof($_POST['other_cur_paid']) : 0;
+
+            for ($r = 0; $r < $p; $r++) {
+                $amt_p 			+= $_POST['amount'][$r];
+                $other_cur_paid += ($_POST['other_cur_paid'][$r]/$cur_rate->rate);
+                $paidd 			= $amt_p + $other_cur_paid;
+                if ($paidd >= $grand_total) {
+                    $paidd 		= $grand_total;
+                }
+            }
+
+            $suppend_name = $this->pos_model->get_suppendName($did);
 
             $i=1;
-            $query=0; 
+            $query=0;
 
             $date = $this->input->post('date');
             $dates = date('Y-m-d',strtotime($date));
-                
+
             $this->db
                 ->select("DATE_FORMAT(date,'%d') as date, biller_id, queue")
                 ->where("DATE_FORMAT(date,'%Y-%m-%d')",$dates)
                 ->where('biller_id', $biller_id)
-                ->order_by('id DESC'); 
+                ->order_by('id DESC');
             $queues = $this->db->get('erp_sales')->row();
             $cdate = date('d');
 
@@ -671,7 +672,7 @@ class Pos extends MY_Controller
             } else {
                 $query = $i;
             }
-            			
+
             $data = array(
                 'date'              => $date,
                 'reference_no'      => $reference,
@@ -691,67 +692,102 @@ class Pos extends MY_Controller
                 'order_tax'         => $order_tax,
                 'total_tax'         => $total_tax,
                 'shipping'          => $this->erp->formatDecimal($shipping),
-                'grand_total'       => $grand_total,
+                'grand_total'       => $this->erp->formatDecimal($grand_total),
                 'total_items'       => $total_items,
                 'sale_status'       => $sale_status,
+                
                 'payment_status'    => $payment_status,
                 'recieve_usd'       => $recieve_usd,
                 'recieve_real'      => $recieve_real,
-				'delivery_by'       => $delivery_by,
+                'delivery_by'       => $delivery_by,
                 'payment_term'      => $payment_term,
                 'pos'               => 1,
                 'other_cur_paid'    => $other_cur_paid ? $other_cur_paid:0,
-                'paid'              => $paidd ? $paidd:0,
                 'created_by'        => $this->session->userdata('user_id'),
-				'suspend_note'      => $this->input->post('suppend_name') ? $this->input->post('suppend_name') : $suppend_name->suspend_name,
-				'other_cur_paid_rate' => $cur_rate->rate,
-				'saleman_by'        => $saleman_id,
-				'type'              => $this->input->post('sale_type'),
-				'type_id'           => $this->input->post('sale_type_id'),
-				'queue'             => $query
+                'suspend_note'      => isset($suppend_name->suspend_name)?$suppend_name->suspend_name:$suspend_room,
+                'other_cur_paid_rate' => $cur_rate->rate,
+                'saleman_by'        => $saleman_id,
+                'type'              => $this->input->post('sale_type'),
+                'type_id'           => $this->input->post('sale_type_id'),
+                'queue'           	=> $query
             );
-            
-			if($_POST['paid_by'][0] == 'depreciation'){
-				$no = sizeof($_POST['no']);
-				$period = 1;
-				for($m = 0; $m < $no; $m++){
-					$dateline = $this->erp->fld($_POST['dateline'][$m]);
-					$loans[] = array(
-						'period' => $period,
-						'sale_id' => '',
-						'interest' => $_POST['interest'][$m],
-						'principle' => $_POST['principle'][$m],
-						'payment' => $_POST['payment_amt'][$m],
-						'balance' => $_POST['balance'][$m],
-						'type' => $_POST['loan_type'],
-						'rated' => $_POST['loan_rate'],
-						'note' => $_POST['note1'][$m],
-						'dateline' => $dateline
-					);
-					$period++;
-				}
-				$data['term'] = $no;
-			}else{
-				$loans = array();
-			}
-			$amount = 0;
-			$kh_paid = false;
-			
+
+
+            if($_POST['paid_by'][0] == 'depreciation'){
+                $no = sizeof($_POST['no']);
+                $period = 1;
+                for($m = 0; $m < $no; $m++){
+                    $dateline = $this->erp->fld($_POST['dateline'][$m]);
+                    $loans[] = array(
+                        'period' => $period,
+                        'sale_id' => '',
+                        'interest' => $_POST['interest'][$m],
+                        'principle' => $_POST['principle'][$m],
+                        'payment' => $_POST['payment_amt'][$m],
+                        'balance' => $_POST['balance'][$m],
+                        'type' => $_POST['loan_type'],
+                        'rated' => $_POST['loan_rate'],
+                        'note' => $_POST['note1'][$m],
+                        'dateline' => $dateline
+                    );
+                    $period++;
+                }
+                $data['term'] = $no;
+            }else{
+                $loans = array();
+            }
+            $amount = 0;
+            $kh_paid = false;
+            $pos_a = 0;
+            $pos_b = 0;
+
             if (!$suspend) {
-                $p = isset($_POST['amount']) ? sizeof($_POST['amount']) : 0;
-				$p_cur = isset($_POST['other_cur_paid']) ? sizeof($_POST['other_cur_paid']) : 0;
-				
+                $p 		= isset($_POST['amount']) ? sizeof($_POST['amount']) : 0;
+                $p_cur 	= isset($_POST['other_cur_paid']) ? sizeof($_POST['other_cur_paid']) : 0;
+                $g_total = $this->erp->formatDecimal($grand_total);
                 for ($r = 0; $r < $p; $r++) {
-                    if (isset($_POST['amount'][$r]) && !empty($_POST['amount'][$r]) && isset($_POST['paid_by'][$r]) && !empty($_POST['paid_by'][$r])) {
+                    $pos_a += $this->erp->formatDecimal(($_POST['amount'][$r] + ($_POST['other_cur_paid'][$r] / $cur_rate->rate)));
+                    $pos_b += ($_POST['amount'][$r] + ($_POST['other_cur_paid'][$r]/$cur_rate->rate));
+                    $paid  = ($_POST['amount'][$r] + ($_POST['other_cur_paid'][$r]/$cur_rate->rate));
+
+                    if ($pos_a < $g_total) {
+                        $amount = $paid;
+                    } else {
+                        $amount = $g_total - ($pos_a - $paid);
+                    }
+
+                    $payment[] = array(
+                        'biller_id' => $biller_id,
+                        'date' => $date,
+                        'reference_no' => (($_POST['paid_by'][$r] == 'deposit' || $_POST['paid_by'][$r] == 'depreciation') ? $reference : $this->site->getReference('sp', $this->session->userdata('biller_id') ? $default_biller[0] : $default_biller)),
+                        'amount' => $this->erp->formatDecimal($amount),
+                        'paid_by' => $_POST['paid_by'][$r],
+                        'cheque_no' => $_POST['cheque_no'][$r],
+                        'cc_no' => ($_POST['paid_by'][$r] == 'gift_card' ? $_POST['paying_gift_card_no'][$r] : $_POST['cc_no'][$r]),
+                        'cc_holder' => $_POST['cc_holder'][$r],
+                        'cc_month' => $_POST['cc_month'][$r],
+                        'cc_year' => $_POST['cc_year'][$r],
+                        'cc_type' => $_POST['cc_type'][$r],
+                        'cc_cvv2' => $_POST['cc_cvv2'][$r],
+                        'created_by' => $this->session->userdata('user_id'),
+                        'type' => 'received',
+                        'note' => $_POST['payment_note'][$r],
+                        'pos_paid' => $_POST['amount'][$r],
+                        'pos_balance' => ($pos_b - $this->erp->formatDecimal($grand_total)),
+                        'pos_paid_other' => $_POST['other_cur_paid'][$r],
+                        'pos_paid_other_rate' => $cur_rate->rate,
+                        'bank_account' => $bank_account[$r]
+                    );
+
+                    /*if (isset($_POST['amount'][$r]) && !empty($_POST['amount'][$r]) && isset($_POST['paid_by'][$r]) && !empty($_POST['paid_by'][$r])) {
 						if(strpos($_POST['amount'][$r], '-') !== false){
 							$payment[] = array(
 								'biller_id'				=> $biller_id,
 								'date' 					=> $date,
 								'reference_no' 			=> (($_POST['paid_by'][$r] == 'deposit' || $_POST['paid_by'][$r] == 'depreciation')? $reference : $this->site->getReference('sp')),
-								'amount' 				=> $paidd,
+                                'amount' => $this->erp->formatDecimal($amount),
 								'paid_by' 				=> $_POST['paid_by'][$r],
                                 'cheque_no' 			=> $_POST['cheque_no'][$r],
-								'cheque_no' 			=> $_POST['voucher_no'][$r],
 								'cc_no' 				=> ($_POST['paid_by'][$r] == 'gift_card' ? $_POST['paying_gift_card_no'][$r] : $_POST['cc_no'][$r]),
 								'cc_holder' 			=> $_POST['cc_holder'][$r],
 								'cc_month' 				=> $_POST['cc_month'][$r],
@@ -760,22 +796,21 @@ class Pos extends MY_Controller
 								'created_by' 			=> $this->session->userdata('user_id'),
 								'type' 					=> 'returned',
 								'note' 					=> $_POST['payment_note'][$r],
-								'pos_paid' 				=> $paidd,
-								'pos_balance' 			=> $pos_balance,
-								'pos_paid_other' 		=> $other_cur_paid,
+								'pos_paid' 				=> $_POST['amount'][$r],
+								'pos_balance' 			=> ($this->erp->formatDecimal($pos_b) - $this->erp->formatDecimal($grand_total)),
+								'pos_paid_other' 		=> $_POST['other_cur_paid'][$r],
 								'pos_paid_other_rate' 	=> $cur_rate->rate,
 								'bank_account' 			=> $bank_account[$r]
-							); 
+							);
 						} else {
-							
+
 							$payment[] = array(
 								'biller_id'				=> $biller_id,
 								'date' 					=> $date,
 								'reference_no' 			=> (($_POST['paid_by'][$r] == 'deposit' || $_POST['paid_by'][$r] == 'depreciation')? $reference : $this->site->getReference('sp')),
-								'amount' 				=> $paidd,
+                                'amount' => $this->erp->formatDecimal($amount),
 								'paid_by' 				=> $_POST['paid_by'][$r],
 								'cheque_no' 			=> $_POST['cheque_no'][$r],
-                                'cheque_no' 			=> $_POST['voucher_no'][$r],
 								'cc_no' 				=> ($_POST['paid_by'][$r] == 'gift_card' ? $_POST['paying_gift_card_no'][$r] : $_POST['cc_no'][$r]),
 								'cc_holder' 			=> $_POST['cc_holder'][$r],
 								'cc_month' 				=> $_POST['cc_month'][$r],
@@ -785,119 +820,126 @@ class Pos extends MY_Controller
 								'created_by' 			=> $this->session->userdata('user_id'),
 								'type' 					=> 'received',
 								'note' 					=> $_POST['payment_note'][$r],
-								'pos_paid' 				=> $paidd,
-								'pos_balance' 			=> $pos_balance,
-								'pos_paid_other' 		=> $other_cur_paid,
+								'pos_paid' 				=> $_POST['amount'][$r],
+								'pos_balance' 			=> ($this->erp->formatDecimal($pos_b) - $this->erp->formatDecimal($grand_total)),
+								'pos_paid_other' 		=> $_POST['other_cur_paid'][$r],
 								'pos_paid_other_rate' 	=> $cur_rate->rate,
 								'bank_account' 			=> $bank_account[$r]
 							);
-							
 						}
-						
+
                         $pp[] = $paidd;
                         $this->site->updateReference('sp');
+                    }*/
+                }
+
+                /*if(isset($p_cur) && empty($_POST['amount'][0])){
+                    $kh_paid = true;
+                    $g_total = $this->erp->formatDecimal($grand_total);
+                    for ($j = 0; $j < $p_cur; $j++) {
+                        $pos_a += $this->erp->formatDecimal(($_POST['amount'][$r] + ($_POST['other_cur_paid'][$r] / $cur_rate->rate)));
+                        $pos_b += ($_POST['amount'][$j] + ($_POST['other_cur_paid'][$j]/$cur_rate->rate));
+                        $paidi  = ($_POST['amount'][$j] + ($_POST['other_cur_paid'][$j]/$cur_rate->rate));
+
+                        if ($pos_a < $g_total) {
+                            $amount = $paidi;
+                        } else {
+                            $amount = $g_total - ($pos_a - $paidi);
+                        }
+
+                        if (isset($_POST['other_cur_paid'][$j]) && !empty($_POST['other_cur_paid'][$j]) && isset($_POST['paid_by'][$j]) && !empty($_POST['paid_by'][$j])) {
+                            $payment[] = array(
+                                'biller_id'				=> $biller_id,
+                                'date' 					=> $date,
+                                'reference_no' 			=> (($_POST['paid_by'][$j] == 'deposit' || $_POST['paid_by'][$j] == 'depreciation')? $reference : $this->site->getReference('sp')),
+                                'amount' => $this->erp->formatDecimal($amount),
+                                'paid_by' 				=> $_POST['paid_by'][$j],
+                                'cheque_no' 			=> $_POST['cheque_no'][$j],
+                                'cc_no' 				=> ($_POST['paid_by'][$j] == 'gift_card' ? $_POST['paying_gift_card_no'][$j] : $_POST['cc_no'][$j]),
+                                'cc_holder' 			=> $_POST['cc_holder'][$j],
+                                'cc_month' 				=> $_POST['cc_month'][$j],
+                                'cc_year' 				=> $_POST['cc_year'][$j],
+                                'cc_type' 				=> $_POST['cc_type'][$j],
+                                'cc_cvv2' 				=> $_POST['cc_cvv2'][$j],
+                                'created_by' 			=> $this->session->userdata('user_id'),
+                                'type' 					=> 'received',
+                                'note' 					=> $_POST['payment_note'][$j],
+                                'pos_paid' 				=> $_POST['amount'][$j],
+                                'pos_balance' 			=> ($this->erp->formatDecimal($pos_b) - $this->erp->formatDecimal($grand_total)),
+                                'pos_paid_other' 		=> $_POST['other_cur_paid'][$j],
+                                'pos_paid_other_rate' 	=> $cur_rate->rate,
+                                'bank_account' 			=> $bank_account[$j]
+                            );
+
+                            $pp[] = $paidd;
+
+                            if($_POST['paid_by'][0] != 'deposit' && $_POST['paid_by'][0] != 'depreciation') {
+                                $this->site->updateReference('sp');
+                            }
+                        }
+                    }
+                }*/
+
+                if($kh_paid == true){
+                    if (!empty($pp)) {
+                        $paid = array_sum($pp);
+                        $paid = $_POST['other_cur_paid'][0]/$cur_rate->rate;
+                    } else {
+                        $paid = 0;
+                    }
+                }else{
+                    if (!empty($pp)) {
+                        $paid = array_sum($pp);
+                        $paid = $paid + $_POST['other_cur_paid'][0]/$cur_rate->rate;
+                    } else {
+                        $paid = 0;
                     }
                 }
-				
-				
-				if(isset($p_cur) && empty($_POST['amount'][0])){
-					$kh_paid = true;
-					for ($j = 0; $j < $p_cur; $j++) {
-						if (isset($_POST['other_cur_paid'][$j]) && !empty($_POST['other_cur_paid'][$j]) && isset($_POST['paid_by'][$j]) && !empty($_POST['paid_by'][$j])) {
-							$payment[] = array(
-								'biller_id'				=> $biller_id,
-								'date' 					=> $date,
-								'reference_no' 			=> (($_POST['paid_by'][$j] == 'deposit' || $_POST['paid_by'][$j] == 'depreciation')? $reference : $this->site->getReference('sp')),
-								'amount' 				=> $paidd,
-								'paid_by' 				=> $_POST['paid_by'][$j],
-								'cheque_no' 			=> $_POST['cheque_no'][$j],
-								'cheque_no' 			=> $_POST['voucher_no'][$j],
-								'cc_no' 				=> ($_POST['paid_by'][$j] == 'gift_card' ? $_POST['paying_gift_card_no'][$j] : $_POST['cc_no'][$j]),
-								'cc_holder' 			=> $_POST['cc_holder'][$j],
-								'cc_month' 				=> $_POST['cc_month'][$j],
-								'cc_year' 				=> $_POST['cc_year'][$j],
-								'cc_type' 				=> $_POST['cc_type'][$j],
-								'cc_cvv2' 				=> $_POST['cc_cvv2'][$j],
-								'created_by' 			=> $this->session->userdata('user_id'),
-								'type' 					=> 'received',
-								'note' 					=> $_POST['payment_note'][$j],
-								'pos_paid' 				=> $paidd,
-								'pos_balance' 			=> $pos_balance,
-								'pos_paid_other' 		=> $other_cur_paid,
-								'pos_paid_other_rate' 	=> $cur_rate->rate,
-								'bank_account' 			=> $bank_account[$j]
-							);
-							
-							$pp[] = $paidd;
-					
-							if($_POST['paid_by'][0] != 'deposit' && $_POST['paid_by'][0] != 'depreciation') {
-								$this->site->updateReference('sp');
-							}
-						}
-					}
-                }
-				
-				if($kh_paid == true){
-					if (!empty($pp)) {
-						$paid = array_sum($pp);
-						$paid = $_POST['other_cur_paid'][0]/$cur_rate->rate;
-					} else {
-						$paid = 0;
-					}
-					
-				}else{
-					
-					if (!empty($pp)) {
-						$paid = array_sum($pp);
-						$paid = $paid + $_POST['other_cur_paid'][0]/$cur_rate->rate;
-					} else {
-						$paid = 0;
-					}
-				}
-								
+
             }
-			
+
             if (!isset($payment) || empty($payment)) {
                 $payment = array();
             }
-			
         }
-		
+
         if ($this->form_validation->run() == true && !empty($products) && !empty($data)) {
-			$cur_rate = $this->pos_model->getExchange_rate();
-			if ($suspend) {
+            $cur_rate = $this->pos_model->getExchange_rate();
+            if ($suspend) {
                 $data['suspend_id'] = $this->input->post('suspend_id');
-				$data['suspend_name'] = $this->input->post('suspend_name');
+                $data['suspend_name'] = $this->input->post('suspend_name');
                 if ($this->pos_model->suspendSale($data, $products, $did)) {
                     $this->session->set_userdata('remove_posls', 1);
                     $this->session->set_flashdata('message', $this->lang->line("sale_suspended"));
                     redirect("pos");
                 }
-				
+
             } else {
-				$data['payment_status'] = $payment_status;
-				
-                if ($sale = $this->pos_model->addSale($data, $products, $payment, $did, $loans, $combine_table_id)) {
-					$paid_by = $_POST['paid_by'][0];
-					if($paid_by == "deposit"){
-						$deposits = array(
-							'date' 			=> $date,
-							'reference' 	=> $reference,
-							'company_id' 	=> $customer_id,
-							'amount' 		=> (-1) * $amout_paid,
-							'paid_by' 		=> $paid_by,
-							'note' 			=> ($note? $note:$customer),
-							'created_by' 	=> $this->session->userdata('user_id'),
-							'biller_id' 	=> $biller_id,
-							'sale_id' 		=> $sale_id,
-							'bank_code' 	=> $bank_account,
-							'status' 		=> 'paid'
-						);
-						
-						$this->sales_model->add_deposit($deposits);
-					}
-					$suspended_sale = $this->pos_model->getOpenBillByID($did);
-					$inactive = $this->pos_model->updateSuspendactive($suspended_sale->suspend_id);
+                $data['payment_status'] = $payment_status;
+                if ($sale = $this->pos_model->addSale($data, $products, $payment, $did, $loans)) {
+                    foreach($payment as $pay){
+                        if($pay['paid_by'] == "deposit"){
+                            $deposits = array(
+                                'date' 			=> $pay['date'],
+                                'reference' 	=> $pay['reference_no'],
+                                'company_id' 	=> $customer_id,
+                                'amount' 		=> (-1) * $pay['amount'],
+                                'paid_by' 		=> $pay['paid_by'],
+                                'note' 			=> ($pay['note']? $pay['note']:$customer),
+                                'created_by' 	=> $this->session->userdata('user_id'),
+                                'biller_id' 	=> $pay['biller_id'],
+                                'sale_id' 		=> $sale['sale_id'],
+                                'bank_code' 	=> $pay['bank_account'],
+                                'status' 		=> 'paid'
+                            );
+
+                            $this->sales_model->add_deposit($deposits);
+                        }
+                    }
+
+                    $suspended_sale = $this->pos_model->getOpenBillByID($did);
+
+                    $inactive = $this->pos_model->updateSuspendactive($suspended_sale->suspend_id);
                     $this->session->set_userdata('remove_posls', 1);
                     $msg = $this->lang->line("sale_added");
                     if (!empty($sale['message'])) {
@@ -906,50 +948,50 @@ class Pos extends MY_Controller
                         }
                     }
                     $this->session->set_flashdata('message', $msg);
-					$sale_id = $this->sales_model->getInvoiceByID($sale['sale_id']);
-					$address = $customer_details->address . " " . $customer_details->city . " " . $customer_details->state . " " . $customer_details->postal_code . " " . $customer_details->country . "<br>Tel: " . $customer_details->phone . " Email: " . $customer_details->email;
-					$dlDetails = array(
-						'date' => $date,
-						'sale_id' => $sale['sale_id'],
-						'do_reference_no' => $this->site->getReference('do'),
-						'sale_reference_no' => $sale_id->reference_no,
-						'customer' => $customer_details->name,
-						'address' => $address,
-						'created_by' => $this->session->userdata('user_id'),
-						'delivery_status' => 'pending',
-						'delivery_by' => $delivery_by
-					);
-					
-					$pos = $this->sales_model->getSetting();
-					if($pos->auto_delivery == 1){
-						$this->sales_model->addDelivery($dlDetails);
-					}
-					redirect("pos/view/" . $sale['sale_id']);
-					//redirect("sales/invoice_st_a5/" . $sale['sale_id']);
-					//redirect("pos/view_teatry/" . $sale['sale_id']);
-					//redirect("sales/sales_invoice_a5/" . $sale['sale_id']);
-					  
-					
+                    /*
+                    $sale_id = $this->sales_model->getInvoiceByID($sale['sale_id']);
+                    $address = $customer_details->address . " " . $customer_details->city . " " . $customer_details->state . " " . $customer_details->postal_code . " " . $customer_details->country . "<br>Tel: " . $customer_details->phone . " Email: " . $customer_details->email;
+                    $dlDetails = array(
+                        'date' => $date,
+                        'sale_id' => $sale['sale_id'],
+                        'do_reference_no' => $this->site->getReference('do'),
+                        'sale_reference_no' => $sale_id->reference_no,
+                        'customer' => $customer_details->name,
+                        'address' => $address,
+                        //'note' => ' ',
+                        'created_by' => $this->session->userdata('user_id'),
+                        'delivery_status' => 'pending',
+                        'delivery_by' => $delivery_by
+                    );
+                    //$this->erp->print_arrays($dlDetails);
+                    $pos = $this->sales_model->getSetting();
+                    if($pos->auto_delivery == 1){
+                        $this->sales_model->addDelivery($dlDetails);
+                    }
+                    */
+                    //redirect("pos/jones_invoice/" . $sale['sale_id']);
+                    redirect("pos");
+                    $this->session->set_flashdata('message', 'success add');
+                    // redirect("pos/view/" . $sale['sale_id']);
                 }
             }
         }else {
-			//it may be run.
-            $this->data['suspend_sale'] = NULL;
-            $this->data['type']     = 0;
-            $this->data['type_id']  = 0;
-            $this->data['sale_order_id'] = 0;
-			$this->data['combine_table'] = 0;			
-            if($sid){
+            //it may be run.
+            $this->data['suspend_sale']     = NULL;
+            $this->data['type']             = 0;
+            $this->data['type_id']          = 0;
+            $this->data['sale_order_id']    = 0;
+            $this->data['combine_table']    = 0;
+            if ($sid) {
                 $suspended_sale = $this->pos_model->getOpenBillByID($sid);
-				if($suspended_sale){
-					$suspended = $this->pos_model->getSuspended($suspended_sale->suspend_id);
-				}
-				
+                if($suspended_sale){
+                    $suspended = $this->pos_model->getSuspended($suspended_sale->suspend_id);
+                }
+
                 $inv_items = $this->pos_model->getSuspendedSaleItems($sid);
                 $c = rand(100000, 9999999);
                 foreach ($inv_items as $item) {
                     $row = $this->site->getProductByID($item->product_id);
-					$dig = $this->site->getProductByID($item->digital_id);
                     if (!$row) {
                         $row = json_decode('{}');
                         $row->tax_method = 0;
@@ -963,9 +1005,9 @@ class Pos extends MY_Controller
                             $row->quantity += $pi->quantity_balance;
                         }
                     }
-					$printed = $this->pos_model->printed_update($sid,$item->product_code);
+                    $printed = $this->pos_model->printed_update($sid,$item->product_code);
                     $row->id = $item->product_id;
-					$row->printed = (isset($printed->printed)?($printed->printed):0);
+                    $row->printed = (isset($printed->printed)?($printed->printed):0);
                     $row->code = $item->product_code;
                     $row->name = $item->product_name;
                     $row->type = $item->product_type;
@@ -978,14 +1020,6 @@ class Pos extends MY_Controller
                     $row->tax_rate = $item->tax_rate_id;
                     $row->serial = $item->serial_no;
                     $row->option = $item->option_id;
-					$row->digital_id	  = 0;
-					$row->digital_code	  = '';
-					$row->digital_name	  = '';
-					if($dig){
-						$row->digital_code 	= $dig->code .' ['. $row->code .']';
-						$row->digital_name 	= $dig->name .' ['. $row->name .']';
-						$row->digital_id   	= $dig->id;
-					}
                     $options = $this->pos_model->getProductOptions($row->id, $item->warehouse_id);
 
                     if ($options) {
@@ -1013,33 +1047,34 @@ class Pos extends MY_Controller
                     }
                     $c++;
                 }
-				
-				$this->data['items'] = json_encode($pr);
+
+                $this->data['items'] = json_encode($pr);
                 $this->data['sid'] = $sid;
                 $this->data['suspend_sale'] = $suspended_sale;
-				$this->data['cus_suspend'] = $suspended;
+                $this->data['cus_suspend'] = $suspended;
                 $this->data['message'] = lang('suspended_sale_loaded');
                 $this->data['customer'] = $this->pos_model->getCompanyByID($suspended_sale->customer_id);
-            }else {
+                // $this->data['reference_note'] = $suspended_sale->suspend_note;
+            } else {
                 $this->data['customer'] = $this->pos_model->getCompanyByID($this->pos_settings->default_customer);
                 $this->data['reference_note'] = NULL;
             }
-				
-			if ($sale_order_id){
-				
+
+            if ($sale_order_id){
+
                 $sale_order = $this->sales_model->getSalePOS($sale_order_id);
-				$this->data['sale_order'] = $sale_order;
-				$items = $this->sales_model->getPOSOrdItems($sale_order_id);
-				$this->data['sale_order_id'] = $sale_order_id;
-				$this->data['type'] = "sale_order";
-				$this->data['type_id'] = $sale_order_id;
-				
-				$customer = $this->site->getCompanyByID($sale_order->customer_id);
-				
+                $this->data['sale_order'] = $sale_order;
+                $items = $this->sales_model->getPOSOrdItems($sale_order_id);
+                $this->data['sale_order_id'] = $sale_order_id;
+                $this->data['type'] = "sale_order";
+                $this->data['type_id'] = $sale_order_id;
+
+                $customer = $this->site->getCompanyByID($sale_order->customer_id);
+
                 $c = rand(100000, 9999999);
                 foreach ($items as $item) {
                     $row = $this->site->getProductByID($item->product_id);
-					
+
                     if (!$row) {
                         $row = json_decode('{}');
                         $row->tax_method = 0;
@@ -1065,11 +1100,11 @@ class Pos extends MY_Controller
                     $row->tax_rate = $item->tax_rate_id;
                     $row->serial = '';
                     $row->option = $item->option_id;
-					
-					$group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
-					$all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
-					$row->price_id = 0;
-					
+
+                    $group_prices = $this->sales_model->getProductPriceGroup($item->product_id, $customer->price_group_id);
+                    $all_group_prices = $this->sales_model->getProductPriceGroup($item->product_id);
+                    $row->price_id = 0;
+
                     $options = $this->sales_model->getProductOptions($row->id, $item->warehouse_id);
                     if ($options) {
                         $option_quantity = 0;
@@ -1098,16 +1133,17 @@ class Pos extends MY_Controller
                     }
                     $c++;
                 }
-				
-				$this->data['sale_order_id'] = $sale_order_id;
+
+                $this->data['sale_order_id'] = $sale_order_id;
                 $this->data['sale_order_items'] = json_encode($pr);
-				$this->data['payment_deposit'] = $payment_deposit;
+                $this->data['payment_deposit'] = $payment_deposit;
             }
-			
-			if ($combine_table) {				
+
+            if ($combine_table) {
                 $suspended_sale = $this->pos_model->getOpenBillByArrayID($combine_table);
-				$suspended 		= $this->pos_model->getSuspended($suspended_sale->suspend_id);
-                $inv_items 		= $this->pos_model->getSuspendedSaleItemsByArr($combine_table);				
+                $suspended 		= $this->pos_model->getSuspended($suspended_sale->suspend_id);
+                $inv_items 		= $this->pos_model->getSuspendedSaleItemsByArr($combine_table);
+                //$this->erp->print_arrays($inv_items);
                 $c = rand(100000, 9999999);
                 foreach ($inv_items as $item) {
                     $row = $this->site->getProductByID($item->product_id);
@@ -1127,7 +1163,7 @@ class Pos extends MY_Controller
                     $row->id 		= $item->product_id;
                     $row->code 		= $item->product_code;
                     $row->name 		= $item->product_name;
-					$row->note 		= $item->product_noted;
+                    $row->note 		= $item->product_noted;
                     $row->type 		= $item->product_type;
                     $row->qty 		= $item->quantity;
                     $row->quantity += $item->quantity;
@@ -1156,89 +1192,101 @@ class Pos extends MY_Controller
                     }
 
                     $ri = $this->Settings->item_addition ? $row->id : $c;
-					if($row->note){
-						$note = '('.$row->note.')';
-					}else{
-						$note = '';
-					}
+                    if($row->note){
+                        $note = '('.$row->note.')';
+                    }else{
+                        $note = '';
+                    }
                     if ($row->tax_rate) {
                         $tax_rate = $this->site->getTaxRateByID($row->tax_rate);
                         $pr[$ri] = array('id' => $c, 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")". $note, 'row' => $row, 'tax_rate' => $tax_rate, 'image' => $row->image, 'options' => $options, 'makeup_cost' => 0);
                     } else {
                         $pr[$ri] = array('id' => $c, 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'tax_rate' => false, 'image' => $row->image, 'options' => $options, 'makeup_cost' => 0);
                     }
-					
+
                     $c++;
                 }
-				if($combine_table){
-					$str = explode('_', $combine_table);
-					$ch = array();
-					foreach($str as $sup_id){
-						$get = $this->pos_model->get_suppendName($sup_id);
-						$ch[] = $get->suspend_name;
-					}
-					$suppend_name = implode('+',$ch);
-				}else{
-					$sup_notes = $this->pos_model->get_suppendName($did);
-					$suppend_name = $sup_notes->suspend_name;
-				}
-				
-				$this->data['suppend_name'] 	= $suppend_name;
-				$this->data['combine_items'] 	= json_encode($pr);
+                if($combine_table){
+                    $str = explode('_', $combine_table);
+                    $ch = array();
+                    foreach($str as $sup_id){
+                        $get = $this->pos_model->get_suppendName($sup_id);
+                        $ch[] = $get->suspend_name;
+                    }
+                    $suppend_name = implode('+',$ch);
+                }else{
+                    $sup_notes = $this->pos_model->get_suppendName($did);
+                    $suppend_name = $sup_notes->suspend_name;
+                }
+
+                $this->data['suppend_name'] 	= $suppend_name;
+                $this->data['combine_items'] 	= json_encode($pr);
                 $this->data['combine_table'] 	= $combine_table;
                 $this->data['suspend_sale'] 	= $suspended_sale;
-				$this->data['cus_suspend'] 		= $suspended;
+                $this->data['cus_suspend'] 		= $suspended;
                 $this->data['message'] 			= lang('suspended_sale_loaded');
                 $this->data['customer'] 		= $this->pos_model->getCompanyByID($suspended_sale->customer_id);
-               // $this->data['reference_note'] = $suspended_sale->suspend_note;
+                // $this->data['reference_note'] = $suspended_sale->suspend_note;
             } else {
                 $this->data['customer'] = $this->pos_model->getCompanyByID($this->pos_settings->default_customer);
                 $this->data['reference_note'] = NULL;
             }
-			
+
             $this->data['error'] 			= (validation_errors() ? validation_errors() : $this->session->flashdata('error'));
             $this->data['message'] 			= isset($this->data['message']) ? $this->data['message'] : $this->session->flashdata('message');
 
             $this->data['biller'] 			= $this->site->getCompanyByID($this->pos_settings->default_biller);
             $this->data['billers'] 			= $this->site->getAllCompanies('biller');
             $this->data['warehouses'] 		= $this->site->getAllWarehouses();
-            
-            $this->data['tax_rates'] 		= $this->site->getAllTaxRates();
-			$this->data['owner_password'] 	= $this->site->getUserSetting(1);
 
-			if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')){
-				$biller_id = $this->site->get_setting()->default_biller;
-				$this->data['reference'] 	= $this->site->getReference('pos',$biller_id);
-			}else{
-				$biller_id = $this->session->userdata('biller_id');
-				$this->data['reference'] 	= $this->site->getReference('pos',$biller_id);
-				$this->data['user_ware'] 		= $this->site->getUserWarehouses();
-			}
-            
-			$this->data['agencies'] 		= $this->site->getAllUsers();
-			$this->data['drivers'] 			= $this->site->getAllCompanies('driver');
+            $this->data['tax_rates'] 		= $this->site->getAllTaxRates();
+            $this->data['owner_password'] 	= $this->site->getUserSetting(1);
+
+            if ($this->Owner || $this->Admin || !$this->session->userdata('biller_id')){
+                $biller_id = $this->site->get_setting()->default_biller;
+                $this->data['reference'] 	= $this->site->getReference('pos',$biller_id);
+            }else{
+                $biller_id = $this->session->userdata('biller_id');
+                $this->data['reference'] 	= $this->site->getReference('pos',$biller_id);
+                $this->data['user_ware'] 		= $this->site->getUserWarehouses();
+            }
+
+            $this->data['agencies'] 		= $this->site->getAllUsers();
+            $this->data['drivers'] 			= $this->site->getAllCompanies('driver');
             $this->data['user'] 			= $this->site->getUser();
             $this->data["tcp"] 				= $this->pos_model->products_count($this->pos_settings->default_category);
             $this->data['products'] 		= $this->ajaxproducts($this->pos_settings->default_category);
-			$this->data['room'] 			= $this->site->suspend_room();
-			$this->data['user_settings'] 	= $this->site->getUserSetting($this->session->userdata('user_id'));
-			$this->data['define_principle'] = $this->settings_model->getprinciple_types();
-			$this->data['queue'] 			= $this->sales_model->getLastQueue(date('Y-m-d'), $this->pos_settings->default_biller);
+            $this->data['room'] 			= $this->site->suspend_room();
+            $this->data['user_settings'] 	= $this->site->getUserSetting($this->session->userdata('user_id'));
+            $this->data['define_principle'] = $this->settings_model->getprinciple_types();
 
             $this->data['categories'] 		= $this->site->getAllCategories();
-			
             $this->data['subcategories'] 	= $this->pos_model->getSubCategoriesByCategoryID($this->pos_settings->default_category);
             $this->data['pos_settings'] 	= $this->pos_settings;
-			$this->data['exchange_rate'] 	= $this->pos_model->getExchange_rate('KHM');
-			$this->data['user_layout'] 		= $this->pos_model->getPosLayout($this->session->userdata('user_id'));
-			$this->data['bankAccounts'] 	=  $this->site->getAllBankAccounts();
-			$this->data['userBankAccounts'] =  $this->site->getAllBankAccountsByUserID();
+            $this->data['exchange_rate'] 	= $this->pos_model->getExchange_rate('KHM');
+            $this->data['user_layout'] 		= $this->pos_model->getPosLayout($this->session->userdata('user_id'));
+            $this->data['bankAccounts'] 	=  $this->site->getAllBankAccounts();
+            $this->data['userBankAccounts'] =  $this->site->getAllBankAccountsByUserID();
+
+            if($this->session->userdata('biller_id')) {
+                $biller = $this->site->getCompanyByID($this->session->userdata('biller_id'));
+            }else {
+                $biller = $this->site->getCompanyByID($this->Settings->default_biller);
+            }
+
+            $this->data['wifi_code']        = $biller->wifi_code;
+            $this->data['bill_addr']        = $biller->address;
+            $this->data['phone']            = $biller->phone;
+            $this->data['email']            = $biller->email;
+            $this->data['vat_no']           = $biller->vat_no;
+            $this->data['invoice_footer']   = $biller->invoice_footer;
 
             $this->load->view($this->theme . 'pos/add', $this->data);
         }
     }
 
-	function view_teatry($sale_id = NULL, $modal = NULL)
+
+    function view_teatry($sale_id = NULL, $modal = NULL)
     {
         $this->erp->checkPermissions('index');
         if ($this->input->get('id')) {

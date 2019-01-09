@@ -87,7 +87,10 @@ if ($modal) {
 				}
 
 				img {
-					padding-right: 20px !important;
+					padding-left: 10px !important;
+				}
+				.col-xs-3{
+				   padding-left: 30px;
 				}
 
 			}
@@ -113,16 +116,23 @@ if ($modal) {
     <div id="receipt-data">
         <div class="text-center">
             <button class="btn btn-xs btn-default no-print pull-left" onclick="window.print()"><i class="fa fa-print"></i>&nbsp;<?= lang("print"); ?></button>
-            <?php if ($Settings->system_management == 'project') { ?>
-				<img src="<?= base_url() . 'assets/uploads/logos/' . $Settings->logo2; ?>" alt="<?= $Settings->site_name; ?>" style="padding-right: 50px" >
-			<?php } else { ?>
-				<img src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>">
-			<?php } ?>
+            <div class="row">
+                <div class="col-xs-3 col-sm-3"><?php if ($Settings->system_management == 'project') { ?>
+				       <img  src="<?= base_url() . 'assets/uploads/logos/' . $Settings->logo2; ?>" alt="<?= $Settings->site_name; ?>"  >
+			            <?php } else { ?>
+				       <img  src="<?= base_url() . 'assets/uploads/logos/' . $biller->logo; ?>" alt="<?= $biller->company; ?>" >
+			            <?php } ?>
+			    </div>
+                <div class="col-xs-5 col-sm-5"><?php
+                         echo "<p style='font-weight:bold;font-size:15px'>ផ្សារបៃតងស្រស់</p>";
+			             echo "<p style='font-weight:bold;font-size:15px'>GREEN FRESH MARKET</p>"; ?>
+			    </div>
+            </div>
+
 			<!--<img style="width:100%;" src="<?= base_url() . 'assets/Aylogo/logo501.jpg'; ?>"> -->
 			<!--<h3 style="text-transform:uppercase;"><?= $biller->company != '-' ? $biller->company : $biller->name; ?></h3>-->
             <?php
-			echo "<p style='font-weight:bold;font-size:16px'>ផ្សារបៃតងស្រស់</p>";
-			echo "<p style='font-weight:bold;font-size:16px'>GREEN FRESH MARKET</p>";
+
             echo "<p>#" . $biller->address . " " . $biller->city . " " . $biller->postal_code . " " . $biller->state . " " . $biller->country;
             echo ($biller->phone ? lang('tel').': '.$biller->phone : '').'<br>'.($biller->email ? lang('email').': '.$biller->email : '');
             

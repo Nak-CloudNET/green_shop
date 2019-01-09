@@ -604,6 +604,7 @@ if ($q->num_rows() > 0) {
                         </div>
 						<div style="clear:both;"></div>
 					<?php } ?>
+                        <input type="hidden" id="reference_no" value="<?= $reference ?>" required>
                         <div id="print">
                             <div id="left-middle">
                                 <div id="product-list">
@@ -759,7 +760,7 @@ if ($q->num_rows() > 0) {
 													<button type="button" title="Print Order - <?= $pos_settings->print_items_list ?>" style="height:68px;width:50%;" class="btn btn-primary" id="print_order_drink">
                                                         <i class="fa fa-print"></i> <?= lang('order_drink'); ?>
                                                     </button>
-                                                    <input type="hidden" name="reference_nob" id="reference_nob" value="<?= $reference ? $reference : '' ?>"/>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -788,7 +789,7 @@ if ($q->num_rows() > 0) {
                                                     <button type="button" title="Print Bill - <?= $pos_settings->print_bill ?>" class="btn btn-primary" id="print_bill"  style="margin-left: 0 !important;">
                                                         <i class="fa fa-print"></i> <?= lang('print_bill'); ?>
                                                     </button>
-                                                    <input type="hidden" name="reference_nob" id="reference_nob" value="<?= $reference ? $reference : '' ?>"/>
+
                                                 </div>
                                             </div>
                                         </div>
