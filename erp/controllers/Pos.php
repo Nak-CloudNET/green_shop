@@ -1814,7 +1814,6 @@ class Pos extends MY_Controller
         $customer           = $this->site->getCompanyByID($customer_id);
         $customer_group     = $this->site->getCustomerGroupByID($customer->customer_group_id);
         $row                = $this->pos_model->getWHProduct($code, $warehouse_id);
-
         $orderqty           = $this->pos_model->getQtyOrder($row->product_id);
         $w_piece            = $this->sales_model->getProductVariantByOptionID($row->id);
         $group_prices       = $this->sales_model->getProductPriceGroup($row->id,$customer->price_group_id);

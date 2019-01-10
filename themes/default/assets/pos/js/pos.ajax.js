@@ -445,7 +445,7 @@ $(document).ready(function () {
 						$("<option />", {value: this.id, text: this.group_name + ' (' + formatDecimal(this.price) + ' '+ this.currency_code +') (' + this.variant_name + ')'}).attr("data-currency_code", this.currency_code).attr("data-unit-id", this.unit_id).appendTo(opt_group_price);
 					}
 				}else{
-					
+
 					$("<option />", {value: this.id, text: this.group_name + ' (' + formatDecimal(this.price) + ' '+ this.currency_code +') (' + this.variant_name + ')'}).attr("data-currency_code", this.currency_code).attr("data-unit-id", this.unit_id).appendTo(opt_group_price);
 				}
 				gp_count++;
@@ -1287,7 +1287,7 @@ function loadItems() {
 					item_ds 		= item_pro_price;
 				}
 			}
-
+            //console.log(all_group_price);
 			//if(site.settings.attributes == 0){
 
 				if(all_group_price){

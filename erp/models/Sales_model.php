@@ -4737,6 +4737,9 @@ class Sales_model extends CI_Model
 		$this->db->join('currencies', 'currencies.code = product_prices.currency_code', 'left');
 		$this->db->where('product_id', $id);
         $this->db->where('product_prices.price_group_id', $group_price_id);
+//        if ($group_price_id){
+//            $this->db->where('product_prices.price_group_id', $group_price_id);
+//        }
 		$q = $this->db->get('product_prices');
         if ($q->num_rows() > 0) {
             foreach (($q->result()) as $row) {

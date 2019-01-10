@@ -12356,7 +12356,7 @@ class Sales extends MY_Controller
                 $options = $this->sales_model->getProductOptions($row->id, $warehouse_id);
 
                 $group_prices = $this->sales_model->getProductPriceGroup($row->id, $customer->price_group_id);
-                $all_group_prices = $this->sales_model->getProductPriceGroup($row->id);
+                $all_group_prices = $this->sales_model->getProductPriceGroup($row->id, $customer->price_group_id);
                 if($expiry_status == 1) {
                     $expdates = $this->sales_model->getProductExpireDate($row->id, $warehouse_id);
                 }else{
@@ -12470,7 +12470,6 @@ class Sales extends MY_Controller
                     $pr[] = array('id' => str_replace(".", "", microtime(true)), 'item_id' => $row->id, 'label' => $row->name . " (" . $row->code . ")", 'row' => $row, 'combo_items' => $combo_items, 'tax_rate' => false, 'options' => $options, 'expdates'=>$expdates, 'group_prices'=>$group_prices, 'all_group_prices' => $all_group_prices, 'makeup_cost'=>$customer_group->makeup_cost, 'customer_percent' => $customer_percent, 'makeup_cost_percent'=>(isset($percent->percent)?$percent->percent:0));
                 }
             }
-            //$this->erp->print_arrays($pr);
             echo json_encode($pr);
         } else {
             echo json_encode(array(array('id' => 0, 'label' => lang('no_match_found'), 'value' => $term)));
